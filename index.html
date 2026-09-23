@@ -1047,7 +1047,8 @@ function applyMembersFromAPI(payload){
   return true;
 }
 
-function loadMembersFromAPI(){
+function loadMembersFromAPI(attempt){
+  attempt = attempt || 1;
   if(!MEMBER_API_URL){
     membersReady = true;
     renderAll();
@@ -1056,18 +1057,27 @@ function loadMembersFromAPI(){
   }
   setDataSourceBadge('loading');
 
+  // Googleのサーバーが少し眠っている状態（しばらくアクセスがなかった直後など）だと、
+  // 最初の応答だけ時間がかかることがあります。1回目がタイムアウトしても、
+  // 2回目でまず間違いなくすぐ返ってくるので、自動でもう一度だけ試してから
+  // 「接続できず」の表示にします。
+  const MAX_ATTEMPTS = 2;
   let settled = false;
   const timeoutId = setTimeout(() => {
     if(settled) return;
     settled = true;
-    membersReady = true;
-    renderAll();
-    setDataSourceBadge('error');
-  }, 8000);
+    if(attempt < MAX_ATTEMPTS){
+      loadMembersFromAPI(attempt + 1);
+    } else {
+      membersReady = true;
+      renderAll();
+      setDataSourceBadge('error');
+    }
+  }, 10000);
 
   // script.google.com の /exec はCORSが効かない環境があるため、
   // JSONP（callbackパラメータでの読み込み）を使い、fetchの成否に依存しない形にしています。
-  const callbackName = '__bniMembersCallback_' + Date.now();
+  const callbackName = '__bniMembersCallback_' + Date.now() + '_' + attempt;
   window[callbackName] = function(payload){
     if(settled) return;
     settled = true;
@@ -1082,9 +1092,13 @@ function loadMembersFromAPI(){
     if(settled) return;
     settled = true;
     clearTimeout(timeoutId);
-    membersReady = true;
-    renderAll();
-    setDataSourceBadge('error');
+    if(attempt < MAX_ATTEMPTS){
+      loadMembersFromAPI(attempt + 1);
+    } else {
+      membersReady = true;
+      renderAll();
+      setDataSourceBadge('error');
+    }
   };
   document.head.appendChild(script);
 }
