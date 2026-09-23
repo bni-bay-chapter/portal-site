@@ -615,7 +615,8 @@ function avatarHTML(id, size){
   const s = size ? `width:${size}px;height:${size}px;font-size:${Math.round(size*0.33)}px;` : '';
   const c = genderColors(m.gender);
   if(m.photoUrl){
-    return `<div class="avatar" style="${s}background-image:url('${m.photoUrl}');background-size:cover;background-position:center top;border:3px solid ${c.pale};">${''}</div>`;
+    const posY = (m.photoPosition !== undefined && m.photoPosition !== '') ? `${m.photoPosition}%` : '0%';
+    return `<div class="avatar" style="${s}background-image:url('${m.photoUrl}');background-size:cover;background-position:center ${posY};border:3px solid ${c.pale};">${''}</div>`;
   }
   return `<div class="avatar" style="background:${c.solid};color:${c.text};${s}">${initials(m.name)}</div>`;
 }
@@ -1023,6 +1024,7 @@ function applyMembersFromAPI(payload){
     role: m.role || '',
     team: m.team || 'none',
     photoUrl: m.photoUrl || '',
+    photoPosition: m.photoPosition || '',
     website: m.website || '',
     gender: m.gender || '',
   }));
