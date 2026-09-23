@@ -180,7 +180,7 @@
 
   /* ---------- avatar / member cards ---------- */
   .avatar{ box-sizing:border-box; width:46px; height:46px; border-radius:50%; display:flex; align-items:center; justify-content:center; color:#fff; font-weight:800; font-size:15px; flex:0 0 auto; font-family:'Shippori Mincho',serif; }
-  .member-card{ padding:16px; display:flex; gap:12px; align-items:flex-start; }
+  .member-card{ padding:16px; display:flex; gap:12px; align-items:flex-start; background:#ffe4b5; }
   .member-card .info{ min-width:0; }
   .member-card .name{ font-weight:700; font-size:14.5px; margin:0 0 2px; }
   .member-no{ display:inline-block; font-weight:600; font-size:11px; color:var(--ink-muted); background:var(--surface-alt); border:1px solid var(--border); border-radius:6px; padding:1px 6px; margin-right:6px; vertical-align:middle; }
@@ -531,9 +531,9 @@ let members = [
 const AVATAR_PALETTE = ['#5C7BA6','#7A9E7E','#B08A9E','#B79A6B','#8E7CB0','#5FA3A3'];
 // 性別によるアイコン配色。「性別」データがない場合は中間色（グレー系）にフォールバックします。
 const GENDER_COLORS = {
-  '男性': { solid:'#10B981', pale:'#A7F3D0' }, // エメラルドグリーン / 淡いグリーン
-  '女性': { solid:'#F472B6', pale:'#FBCFE8' }, // ピンク / 淡いピンク
-  default: { solid:'#8B95A1', pale:'#D9DEE4' },
+  '男性': { solid:'#7fffd4', pale:'#7fffd4', text:'#0f3d33' },
+  '女性': { solid:'#ffe4e1', pale:'#ffe4e1', text:'#5c2a2a' },
+  default: { solid:'#8B95A1', pale:'#D9DEE4', text:'#fff' },
 };
 
 /* ベイチャプター 会員マスター 公開用API（GAS）。
@@ -616,7 +616,7 @@ function avatarHTML(id, size){
   if(m.photoUrl){
     return `<div class="avatar" style="${s}background-image:url('${m.photoUrl}');background-size:cover;background-position:center;border:3px solid ${c.pale};">${''}</div>`;
   }
-  return `<div class="avatar" style="background:${c.solid};${s}">${initials(m.name)}</div>`;
+  return `<div class="avatar" style="background:${c.solid};color:${c.text};${s}">${initials(m.name)}</div>`;
 }
 function statusTag(status){
   const map = {
@@ -769,7 +769,7 @@ function renderMembers(){
           <p class="company">${m.company}</p>
           <div class="badges">
             <span class="cat-chip">${m.category}</span>
-            ${teamChip(m.team)}
+            ${m.role ? `<span class="cat-chip">${m.role}</span>` : ''}
           </div>
           ${m.website ? `<a class="member-hp-link" href="${m.website}" target="_blank" rel="noopener noreferrer" onclick="event.stopPropagation()">🌐 ホームページを見る</a>` : ''}
         </div>`;
