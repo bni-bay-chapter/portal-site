@@ -179,10 +179,11 @@
   .callout button.close{ margin-left:auto; border:none; background:none; color:var(--ink-soft); cursor:pointer; font-size:13px; flex:0 0 auto; }
 
   /* ---------- avatar / member cards ---------- */
-  .avatar{ width:46px; height:46px; border-radius:50%; display:flex; align-items:center; justify-content:center; color:#fff; font-weight:800; font-size:15px; flex:0 0 auto; font-family:'Shippori Mincho',serif; }
+  .avatar{ box-sizing:border-box; width:46px; height:46px; border-radius:50%; display:flex; align-items:center; justify-content:center; color:#fff; font-weight:800; font-size:15px; flex:0 0 auto; font-family:'Shippori Mincho',serif; }
   .member-card{ padding:16px; display:flex; gap:12px; align-items:flex-start; }
   .member-card .info{ min-width:0; }
   .member-card .name{ font-weight:700; font-size:14.5px; margin:0 0 2px; }
+  .member-no{ display:inline-block; font-weight:600; font-size:11px; color:var(--ink-muted); background:var(--surface-alt); border:1px solid var(--border); border-radius:6px; padding:1px 6px; margin-right:6px; vertical-align:middle; }
   .member-card .company{ font-size:12px; color:var(--ink-muted); margin:0 0 8px; overflow-wrap:anywhere; }
   .member-card .badges{ display:flex; flex-wrap:wrap; gap:5px; }
   .cat-chip{ font-size:11px; padding:2px 8px; border-radius:999px; border:1px solid var(--border); color:var(--ink-muted); background:var(--surface-alt); }
@@ -509,25 +510,31 @@ const TEAM_META = {
 };
 
 let members = [
-  { id:1,  name:'山田 隆',   category:'税理士',           company:'やまだ税理士事務所',           team:'LT',         role:'会長' },
-  { id:2,  name:'佐藤 恵美', category:'行政書士',         company:'さとう行政書士事務所',         team:'LT',         role:'副会長' },
-  { id:3,  name:'高橋 直樹', category:'Web制作',          company:'タカハシデザイン合同会社',     team:'membership', role:'委員長' },
-  { id:4,  name:'田中 美咲', category:'生命保険',         company:'タナカ生命保険代理店',         team:'membership', role:'委員' },
-  { id:5,  name:'伊藤 健太', category:'不動産',           company:'伊藤不動産株式会社',           team:'vcc',        role:'委員長' },
-  { id:6,  name:'渡辺 由美', category:'美容室経営',       company:'サロン ワタナベ',              team:'vcc',        role:'委員' },
-  { id:7,  name:'中村 誠',   category:'印刷',             company:'中村印刷株式会社',             team:'event',      role:'委員長' },
-  { id:8,  name:'小林 彩',   category:'写真撮影',         company:'コバヤシフォトスタジオ',       team:'event',      role:'委員' },
-  { id:9,  name:'加藤 大輔', category:'内装工事',         company:'カトウ内装',                   team:'none',       role:'一般会員' },
-  { id:10, name:'吉田 香織', category:'人材紹介',         company:'よしだキャリアパートナーズ',   team:'none',       role:'一般会員' },
-  { id:11, name:'山本 剛',   category:'ITシステム開発',   company:'山本システムズ株式会社',       team:'none',       role:'一般会員' },
-  { id:12, name:'松本 麻衣', category:'金融コンサル',     company:'マツモトFPオフィス',           team:'none',       role:'一般会員' },
-  { id:13, name:'井上 一郎', category:'建築設計',         company:'井上設計事務所',               team:'none',       role:'一般会員' },
-  { id:14, name:'木村 沙織', category:'動画制作',         company:'キムラ映像制作',               team:'none',       role:'一般会員' },
-  { id:15, name:'林 修平',   category:'飲食店経営',       company:'割烹はやし',                   team:'none',       role:'一般会員' },
-  { id:16, name:'清水 陽子', category:'損害保険',         company:'シミズ損保代理店',             team:'none',       role:'一般会員' },
+  { id:1,  name:'山田 隆',   category:'税理士',           company:'やまだ税理士事務所',           team:'LT',         role:'会長',   gender:'男性' },
+  { id:2,  name:'佐藤 恵美', category:'行政書士',         company:'さとう行政書士事務所',         team:'LT',         role:'副会長', gender:'女性' },
+  { id:3,  name:'高橋 直樹', category:'Web制作',          company:'タカハシデザイン合同会社',     team:'membership', role:'委員長', gender:'男性' },
+  { id:4,  name:'田中 美咲', category:'生命保険',         company:'タナカ生命保険代理店',         team:'membership', role:'委員',   gender:'女性' },
+  { id:5,  name:'伊藤 健太', category:'不動産',           company:'伊藤不動産株式会社',           team:'vcc',        role:'委員長', gender:'男性' },
+  { id:6,  name:'渡辺 由美', category:'美容室経営',       company:'サロン ワタナベ',              team:'vcc',        role:'委員',   gender:'女性' },
+  { id:7,  name:'中村 誠',   category:'印刷',             company:'中村印刷株式会社',             team:'event',      role:'委員長', gender:'男性' },
+  { id:8,  name:'小林 彩',   category:'写真撮影',         company:'コバヤシフォトスタジオ',       team:'event',      role:'委員',   gender:'女性' },
+  { id:9,  name:'加藤 大輔', category:'内装工事',         company:'カトウ内装',                   team:'none',       role:'一般会員', gender:'男性' },
+  { id:10, name:'吉田 香織', category:'人材紹介',         company:'よしだキャリアパートナーズ',   team:'none',       role:'一般会員', gender:'女性' },
+  { id:11, name:'山本 剛',   category:'ITシステム開発',   company:'山本システムズ株式会社',       team:'none',       role:'一般会員', gender:'男性' },
+  { id:12, name:'松本 麻衣', category:'金融コンサル',     company:'マツモトFPオフィス',           team:'none',       role:'一般会員', gender:'女性' },
+  { id:13, name:'井上 一郎', category:'建築設計',         company:'井上設計事務所',               team:'none',       role:'一般会員', gender:'男性' },
+  { id:14, name:'木村 沙織', category:'動画制作',         company:'キムラ映像制作',               team:'none',       role:'一般会員', gender:'女性' },
+  { id:15, name:'林 修平',   category:'飲食店経営',       company:'割烹はやし',                   team:'none',       role:'一般会員', gender:'男性' },
+  { id:16, name:'清水 陽子', category:'損害保険',         company:'シミズ損保代理店',             team:'none',       role:'一般会員', gender:'女性' },
 ];
 
 const AVATAR_PALETTE = ['#5C7BA6','#7A9E7E','#B08A9E','#B79A6B','#8E7CB0','#5FA3A3'];
+// 性別によるアイコン配色。「性別」データがない場合は中間色（グレー系）にフォールバックします。
+const GENDER_COLORS = {
+  '男性': { solid:'#10B981', pale:'#A7F3D0' }, // エメラルドグリーン / 淡いグリーン
+  '女性': { solid:'#F472B6', pale:'#FBCFE8' }, // ピンク / 淡いピンク
+  default: { solid:'#8B95A1', pale:'#D9DEE4' },
+};
 
 /* ベイチャプター 会員マスター 公開用API（GAS）。
    マスターの「会員マスター」シートを唯一の情報源として、電話番号・メールアドレスを
@@ -600,15 +607,16 @@ const teamTasks = {
    ========================================================= */
 function memberById(id){ return members.find(m => m.id === id); }
 function initials(name){ return name.split(' ')[0] || name.slice(0,2); }
-function avatarColor(id){ return AVATAR_PALETTE[id % AVATAR_PALETTE.length]; }
+function genderColors(gender){ return GENDER_COLORS[gender] || GENDER_COLORS.default; }
 function avatarHTML(id, size){
   const m = memberById(id);
   if(!m) return '';
   const s = size ? `width:${size}px;height:${size}px;font-size:${Math.round(size*0.33)}px;` : '';
+  const c = genderColors(m.gender);
   if(m.photoUrl){
-    return `<div class="avatar" style="${s}background-image:url('${m.photoUrl}');background-size:cover;background-position:center;">${''}</div>`;
+    return `<div class="avatar" style="${s}background-image:url('${m.photoUrl}');background-size:cover;background-position:center;border:3px solid ${c.pale};">${''}</div>`;
   }
-  return `<div class="avatar" style="background:${avatarColor(id)};${s}">${initials(m.name)}</div>`;
+  return `<div class="avatar" style="background:${c.solid};${s}">${initials(m.name)}</div>`;
 }
 function statusTag(status){
   const map = {
@@ -757,7 +765,7 @@ function renderMembers(){
       div.innerHTML = `
         ${avatarHTML(m.id)}
         <div class="info">
-          <p class="name">${m.name}</p>
+          <p class="name">${m.id ? `<span class="member-no">No.${m.id}</span>` : ''}${m.name}</p>
           <p class="company">${m.company}</p>
           <div class="badges">
             <span class="cat-chip">${m.category}</span>
@@ -1012,6 +1020,7 @@ function applyMembersFromAPI(payload){
     team: m.team || 'none',
     photoUrl: m.photoUrl || '',
     website: m.website || '',
+    gender: m.gender || '',
   }));
   renderAll();
   setDataSourceBadge('live');
