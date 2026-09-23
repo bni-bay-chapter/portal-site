@@ -186,6 +186,8 @@
   .member-card .company{ font-size:12px; color:var(--ink-muted); margin:0 0 8px; overflow-wrap:anywhere; }
   .member-card .badges{ display:flex; flex-wrap:wrap; gap:5px; }
   .cat-chip{ font-size:11px; padding:2px 8px; border-radius:999px; border:1px solid var(--border); color:var(--ink-muted); background:var(--surface-alt); }
+  .member-hp-link{ display:inline-block; margin-top:8px; font-size:11.5px; color:var(--accent, #2563eb); text-decoration:none; }
+  .member-hp-link:hover{ text-decoration:underline; }
   .team-chip{ font-size:11px; padding:2px 8px; border-radius:999px; color:#fff; font-weight:700; }
   .toolbar{ display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin-bottom:16px; }
   .toolbar input[type="text"], .toolbar select{ padding:8px 11px; border-radius:var(--radius-s); border:1px solid var(--border); background:var(--surface); color:var(--ink); font-size:13px; }
@@ -759,6 +761,7 @@ function renderMembers(){
             <span class="cat-chip">${m.category}</span>
             ${teamChip(m.team)}
           </div>
+          ${m.website ? `<a class="member-hp-link" href="${m.website}" target="_blank" rel="noopener noreferrer" onclick="event.stopPropagation()">🌐 ホームページを見る</a>` : ''}
         </div>`;
       grid.appendChild(div);
     });
@@ -1005,6 +1008,7 @@ function applyMembersFromAPI(payload){
     role: m.role || '',
     team: m.team || 'none',
     photoUrl: m.photoUrl || '',
+    website: m.website || '',
   }));
   renderAll();
   setDataSourceBadge('live');
