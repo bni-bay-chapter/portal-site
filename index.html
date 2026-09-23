@@ -682,7 +682,9 @@ function renderHome(){
   // this week's presenter
   const r = rotation[0];
   const m = memberById(r.memberId);
-  document.getElementById('homePresenter').innerHTML = `
+  document.getElementById('homePresenter').innerHTML = !m ? `
+    <div class="note">プレゼンローテーションのデータは準備中です。</div>
+  ` : `
     <div style="display:flex; gap:14px; align-items:center;">
       ${avatarHTML(m.id, 56)}
       <div>
@@ -777,6 +779,7 @@ function renderRotation(){
   const body = document.getElementById('rotationBody');
   body.innerHTML = rotation.map(r => {
     const m = memberById(r.memberId);
+    if(!m) return '';
     return `<tr>
       <td>${r.week}</td>
       <td><div class="row-person">${avatarHTML(m.id,34)}<span>${m.name}</span></div></td>
