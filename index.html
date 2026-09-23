@@ -512,6 +512,11 @@ const TEAM_META = {
   event:      { label:'イベント・広報委員会',       color:'var(--team-event)',      desc:'チャプター内イベントの企画運営と、対外的な広報・SNS発信を担当します。', cadence:'月1回 企画会議' },
 };
 
+// マスター（API）からの読み込みが終わるまでは true になりません。
+// これが false の間は、ホーム画面・メンバー一覧に下のサンプル人物名を
+// 表示せず、「読み込み中」の表示にします（実データ取得後 or タイムアウト後に true へ）。
+let membersReady = false;
+
 let members = [
   { id:1,  name:'山田 隆',   category:'税理士',           company:'やまだ税理士事務所',           team:'LT',         role:'会長',   gender:'男性' },
   { id:2,  name:'佐藤 恵美', category:'行政書士',         company:'さとう行政書士事務所',         team:'LT',         role:'副会長', gender:'女性' },
@@ -693,8 +698,10 @@ function showView(id){
 function renderHome(){
   // this week's presenter
   const r = rotation[0];
-  const m = memberById(r.memberId);
-  document.getElementById('homePresenter').innerHTML = !m ? `
+  const m = membersReady ? memberById(r.memberId) : null;
+  document.getElementById('homePresenter').innerHTML = !membersReady ? `
+    <div class="note">読み込み中です…</div>
+  ` : !m ? `
     <div class="note">プレゼンローテーションのデータは準備中です。</div>
   ` : `
     <div style="display:flex; gap:14px; align-items:center;">
@@ -760,6 +767,10 @@ function renderMembers(){
   const teamF = document.getElementById('teamFilter').value;
   const grid = document.getElementById('memberGrid');
   grid.innerHTML = '';
+  if(!membersReady){
+    grid.innerHTML = `<div class="note">メンバー情報を読み込み中です…</div>`;
+    return;
+  }
   members
     .filter(m => !teamF || m.team === teamF)
     .filter(m => !q || [m.name, m.company, m.category].join(' ').toLowerCase().includes(q))
@@ -1017,6 +1028,7 @@ function setDataSourceBadge(state){
 
 function applyMembersFromAPI(payload){
   if(!payload || !Array.isArray(payload.members) || !payload.members.length) return false;
+  membersReady = true;
   members = payload.members.map(m => ({
     id: m.id,
     name: m.name,
@@ -1036,13 +1048,20 @@ function applyMembersFromAPI(payload){
 }
 
 function loadMembersFromAPI(){
-  if(!MEMBER_API_URL){ setDataSourceBadge('default'); return; }
+  if(!MEMBER_API_URL){
+    membersReady = true;
+    renderAll();
+    setDataSourceBadge('default');
+    return;
+  }
   setDataSourceBadge('loading');
 
   let settled = false;
   const timeoutId = setTimeout(() => {
     if(settled) return;
     settled = true;
+    membersReady = true;
+    renderAll();
     setDataSourceBadge('error');
   }, 8000);
 
@@ -1063,6 +1082,8 @@ function loadMembersFromAPI(){
     if(settled) return;
     settled = true;
     clearTimeout(timeoutId);
+    membersReady = true;
+    renderAll();
     setDataSourceBadge('error');
   };
   document.head.appendChild(script);
