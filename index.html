@@ -615,7 +615,7 @@ function avatarHTML(id, size){
   const s = size ? `width:${size}px;height:${size}px;font-size:${Math.round(size*0.33)}px;` : '';
   const c = genderColors(m.gender);
   if(m.photoUrl){
-    return `<div class="avatar" style="${s}background-image:url('${m.photoUrl}');background-size:cover;background-position:center;border:3px solid ${c.pale};">${''}</div>`;
+    return `<div class="avatar" style="${s}background-image:url('${m.photoUrl}');background-size:cover;background-position:center top;border:3px solid ${c.pale};">${''}</div>`;
   }
   return `<div class="avatar" style="background:${c.solid};color:${c.text};${s}">${initials(m.name)}</div>`;
 }
