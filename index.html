@@ -311,9 +311,9 @@
             <p>チャプター運営に関わる情報をここに集約しています。まずは以下のタブをご覧ください。</p>
             <ul>
               <li><strong>メンバー一覧</strong> … 顔写真・業種・会社名を一覧で確認できます</li>
-              <li><strong>プレゼンローテーション</strong> … 今後5週分のメインプレゼン担当と準備状況</li>
+              <li><strong>スケジュール</strong> … リージョン／チャプター主催イベントの一覧と出欠回答</li>
+              <li><strong>パスポートプログラム</strong> … 新メンバーの1to1メンタリング進捗</li>
               <li><strong>資料室</strong> … 規約やテンプレートなど各種資料をまとめて掲載</li>
-              <li><strong>出欠確認</strong> … 例会の出欠をフォームから回答・集計</li>
               <li><strong>タスク・進捗</strong> … 各委員会のタスクと進捗を一目で確認</li>
               <li><strong>マスターデータ</strong> … 運営担当者向け：メンバー情報の一元管理の仕組み</li>
             </ul>
@@ -321,48 +321,51 @@
           <button class="close" onclick="document.getElementById('onboardCallout').style.display='none'">閉じる ×</button>
         </div>
 
-        <div class="section-title">今週のチャプター実績</div>
-        <div class="section-sub">2026年9月第3週（直近の例会：9/16実施分）時点のサマリーです</div>
-        <div class="grid cols-4" style="margin-bottom:22px;">
-          <div class="card stat-tile">
-            <div class="label">出席率</div>
-            <div class="value">81<small>%</small></div>
-            <div class="delta up">▲ 3pt（先週比）</div>
-          </div>
-          <div class="card stat-tile">
-            <div class="label">紹介数（今月累計）</div>
-            <div class="value">24<small>件</small></div>
-            <div class="delta up">▲ 5件（先月比）</div>
-          </div>
-          <div class="card stat-tile">
-            <div class="label">TYFCB（今月）</div>
-            <div class="value">¥386<small>万</small></div>
-            <div class="delta up">▲ 42万円</div>
-          </div>
-          <div class="card stat-tile">
-            <div class="label">ビジター数（今週）</div>
-            <div class="value">2<small>名</small></div>
-            <div class="delta down">▼ 1名（先週比）</div>
-          </div>
-        </div>
+        <div class="section-title">新メンバー紹介</div>
+        <div class="section-sub">入会から3ヶ月以内のメンバーです</div>
+        <div class="grid cols-3" id="homeNewMembers" style="margin-bottom:22px;"></div>
 
         <div class="grid cols-2" style="align-items:start; margin-bottom:22px;">
           <div class="card" style="padding:18px;">
-            <div class="section-title">今週のメインプレゼン担当</div>
-            <div class="section-sub">次回例会（9/22）の担当者</div>
-            <div id="homePresenter"></div>
+            <div class="section-title">今週のメインプレゼン</div>
+            <div class="section-sub">今週の例会の担当者です</div>
+            <div id="homePresenters"></div>
           </div>
           <div class="card" style="padding:18px;">
-            <div class="section-title">出欠確認サマリー（次回：9/22）</div>
-            <div class="section-sub" id="homeAttendanceSub"></div>
-            <div id="homeAttendanceBars"></div>
+            <div class="section-title">今週のビジター情報</div>
+            <div class="section-sub" id="homeVisitorsSub"></div>
+            <div id="homeVisitors"></div>
           </div>
         </div>
+
+        <div class="section-title">直近のスケジュール</div>
+        <div class="section-sub">クリックすると詳細・出欠回答画面へ移動します（すべて見るには左メニューの「スケジュール」へ）</div>
+        <div id="homeSchedule" style="margin-bottom:22px;"></div>
 
         <div class="section-title">チーム別 進捗状況</div>
         <div class="section-sub">タスクの完了率を一目で確認できます（詳細は「タスク・進捗」タブへ）</div>
         <div class="grid cols-4" id="homeTeamProgress"></div>
 
+      </section>
+
+      <!-- ---------- SCHEDULE ---------- -->
+      <section class="view" id="view-schedule">
+        <div id="scheduleListWrap">
+          <div class="section-title">スケジュール</div>
+          <div class="section-sub">リージョン・チャプター主催のイベント一覧です。参加を希望するイベントをクリックしてください。</div>
+          <div id="scheduleList"></div>
+        </div>
+        <div id="scheduleDetailWrap" style="display:none;">
+          <button class="btn" onclick="closeScheduleDetail()">← 一覧に戻る</button>
+          <div id="scheduleDetailBody" style="margin-top:16px;"></div>
+        </div>
+      </section>
+
+      <!-- ---------- PASSPORT PROGRAM ---------- -->
+      <section class="view" id="view-passport">
+        <div class="section-title">パスポートプログラム進捗</div>
+        <div class="section-sub" id="passportSub">新メンバーの1to1メンタリング進捗です。</div>
+        <div id="passportList"></div>
       </section>
 
       <!-- ---------- MEMBERS ---------- -->
@@ -554,6 +557,15 @@ const GENDER_COLORS = {
    除いた項目だけをここから取得します。取得できない場合は、下のサンプルデータのまま表示します。 */
 const MEMBER_API_URL = 'https://script.google.com/macros/s/AKfycbwCpHflhEUfSbGa69FgVxTscfaM6wBSdNSCFopIq3O5Y-PzXdZb_875j75JOuAgqw2mLw/exec';
 
+// ↓ ここから、マスター連携の「実データ」用（API読み込み後に applyMembersFromAPI で入ります）
+let weeklyRotation   = []; // 週次ローテーション（メインプレゼン2名・80秒プレゼン）
+let visitors         = []; // ビジター管理（週ごと・1人1行）
+let scheduleEvents    = []; // スケジュール管理（リージョン/チャプター主催イベント）
+let passportItems     = []; // パスポート担当者（項目定義）
+let passportProgress  = []; // パスポート進捗（新メンバーごと）
+let attendanceRecords = []; // 出欠管理（スケジュールへの回答一覧）
+
+// ↓ ここから下は、他タブ（プレゼンローテーション／出欠確認など）のデモ表示用サンプルデータです
 let rotation = [
   { week:'2026/09/22（火）', memberId:3,  status:'準備完了',   topic:'ホームページ制作で信頼を獲得する方法' },
   { week:'2026/09/29（火）', memberId:4,  status:'準備完了',   topic:'法人向け生命保険の活用事例' },
@@ -663,6 +675,8 @@ const VIEWS = [
   { id:'rotation',   label:'プレゼンローテーション', count:()=>rotation.length },
   { id:'docs',       label:'資料室',             count:()=>documents.length },
   { id:'attendance', label:'出欠確認' },
+  { id:'schedule',   label:'スケジュール',       count:()=>scheduleEvents.length },
+  { id:'passport',   label:'パスポートプログラム', count:()=>passportProgress.length },
   { id:'tasks',      label:'タスク・進捗' },
   { id:'teams',      label:'チーム紹介',         count:()=>Object.keys(TEAM_META).length },
   { id:'master',     label:'マスターデータ' },
@@ -678,13 +692,13 @@ function buildNav(){
     b1.textContent = v.label;
     b1.dataset.view = v.id;
     if(v.count){ const n=document.createElement('span'); n.className='n'; n.textContent=v.count(); b1.appendChild(n); }
-    b1.onclick = () => showView(v.id);
+    b1.onclick = () => navClick(v.id);
     nav.appendChild(b1);
 
     const b2 = document.createElement('button');
     b2.textContent = v.label;
     b2.dataset.view = v.id;
-    b2.onclick = () => showView(v.id);
+    b2.onclick = () => navClick(v.id);
     mob.appendChild(b2);
   });
 }
@@ -697,40 +711,134 @@ function showView(id){
   window.scrollTo({top:0});
 }
 
+// 左メニュー・スマホ用メニューのタブ切り替え。「スケジュール」タブは
+// クリックのたびに一覧画面から始まるようにする（詳細を開いたまま残さない）。
+function navClick(id){
+  if(id === 'schedule') closeScheduleDetail();
+  showView(id);
+}
+
+/* =========================================================
+   日付ヘルパー（「今週」の判定・新メンバー判定・並び替えに使用）
+   ========================================================= */
+function mondayOf_(d){
+  const dt = new Date(d);
+  const day = (dt.getDay() + 6) % 7; // 月=0 … 日=6
+  dt.setDate(dt.getDate() - day);
+  dt.setHours(0,0,0,0);
+  return dt;
+}
+function isSameWeek_(dateStr, ref){
+  if(!dateStr) return false;
+  const d = new Date(dateStr + 'T00:00:00');
+  if(isNaN(d)) return false;
+  return mondayOf_(d).getTime() === mondayOf_(ref).getTime();
+}
+function thisWeekRotation(){
+  const today = new Date();
+  return weeklyRotation.find(r => isSameWeek_(r.week, today)) || null;
+}
+function thisWeekVisitors(){
+  const today = new Date();
+  return visitors.filter(v => isSameWeek_(v.week, today));
+}
+function newMemberList(){
+  const now = new Date(); now.setHours(0,0,0,0);
+  const cutoff = new Date(now); cutoff.setMonth(cutoff.getMonth() - 3);
+  return members
+    .filter(m => {
+      if(!m.joinDate) return false;
+      const d = new Date(m.joinDate + 'T00:00:00');
+      return !isNaN(d) && d >= cutoff && d <= now;
+    })
+    .sort((a,b) => b.joinDate.localeCompare(a.joinDate));
+}
+function upcomingScheduleList(limit){
+  const today = new Date(); today.setHours(0,0,0,0);
+  const list = scheduleEvents
+    .filter(ev => {
+      if(!ev.date) return false;
+      const d = new Date(ev.date + 'T00:00:00');
+      return !isNaN(d) && d >= today;
+    })
+    .sort((a,b) => a.date < b.date ? -1 : a.date > b.date ? 1 : 0);
+  return limit ? list.slice(0, limit) : list;
+}
+function passportTotal_(){ return passportItems.length || 14; }
+function passportDoneCount_(p){
+  return passportItems.filter(it => p.items && p.items[it.id]).length;
+}
+
 /* =========================================================
    RENDER: HOME
    ========================================================= */
 function renderHome(){
-  // this week's presenter
-  const r = rotation[0];
-  const m = membersReady ? memberById(r.memberId) : null;
-  document.getElementById('homePresenter').innerHTML = !membersReady ? `
-    <div class="note">読み込み中です…</div>
-  ` : !m ? `
-    <div class="note">プレゼンローテーションのデータは準備中です。</div>
-  ` : `
-    <div style="display:flex; gap:14px; align-items:center;">
+  if(!membersReady){
+    document.getElementById('homeNewMembers').innerHTML = `<div class="note">読み込み中です…</div>`;
+    document.getElementById('homePresenters').innerHTML = `<div class="note">読み込み中です…</div>`;
+    document.getElementById('homeVisitors').innerHTML = '';
+    document.getElementById('homeVisitorsSub').textContent = '';
+    document.getElementById('homeSchedule').innerHTML = `<div class="note">読み込み中です…</div>`;
+    document.getElementById('homeTeamProgress').innerHTML = '';
+    return;
+  }
+
+  // ---- 新メンバー紹介 ----
+  const newMembersGrid = document.getElementById('homeNewMembers');
+  const nm = newMemberList();
+  newMembersGrid.innerHTML = nm.length ? nm.map(m => `
+    <div class="card" style="padding:16px; display:flex; gap:12px; align-items:center;">
       ${avatarHTML(m.id, 56)}
-      <div>
-        <div style="font-weight:700; font-size:15.5px;">${m.name}</div>
-        <div style="font-size:12.5px; color:var(--ink-muted); margin:2px 0 8px;">${m.category} ／ ${m.company}</div>
-        ${statusTag(r.status)}
+      <div style="min-width:0;">
+        <div style="font-weight:700; font-size:14.5px;">${m.name}</div>
+        <div style="font-size:12px; color:var(--ink-muted); margin:2px 0 6px; overflow-wrap:anywhere;">${m.company}</div>
+        <span class="cat-chip">${m.category}</span>
       </div>
     </div>
-    <div class="note" style="margin-top:12px;">テーマ：${r.topic}</div>
-  `;
+  `).join('') : `<div class="note">直近3ヶ月以内に入会したメンバーはいません。</div>`;
 
-  // attendance summary for the current front-of-list week
-  const week = rotation[0].week;
-  const weekRows = attendance.filter(a => a.week === week);
-  const counts = { '出席':0, '欠席':0, '60分ルール':0, '遅刻':0 };
-  weekRows.forEach(a => counts[a.status] = (counts[a.status]||0) + 1);
-  const answered = weekRows.length;
-  const noAnswer = members.length - answered;
-  document.getElementById('homeAttendanceSub').textContent = `回答 ${answered}/${members.length}名`;
-  document.getElementById('homeAttendanceBars').innerHTML = attBarsHTML(counts, noAnswer);
+  // ---- 今週のメインプレゼン（2名）＋80秒プレゼン ----
+  const rot = thisWeekRotation();
+  const presWrap = document.getElementById('homePresenters');
+  if(!rot){
+    presWrap.innerHTML = `<div class="note">今週のプレゼン情報はまだ登録されていません。</div>`;
+  } else {
+    const presenterRow = (name, topic) => {
+      if(!name) return '';
+      const m = members.find(x => x.name === name);
+      return `
+        <div style="display:flex; gap:12px; align-items:center; margin-bottom:12px;">
+          ${m ? avatarHTML(m.id, 44) : `<div class="avatar" style="width:44px;height:44px;background:var(--surface-alt);color:var(--ink-muted);">${name.slice(0,2)}</div>`}
+          <div style="min-width:0;">
+            <div style="font-weight:700; font-size:14px;">${name}</div>
+            ${topic ? `<div style="font-size:12px; color:var(--ink-muted); overflow-wrap:anywhere;">テーマ：${topic}</div>` : ''}
+          </div>
+        </div>`;
+    };
+    presWrap.innerHTML = presenterRow(rot.presenter1, rot.topic1) + presenterRow(rot.presenter2, rot.topic2)
+      + (rot.eighty ? `<div class="note" style="margin-top:4px;">80秒プレゼン：<strong>${rot.eighty}</strong></div>` : '');
+  }
 
-  // team progress
+  // ---- 今週のビジター情報 ----
+  const tv = thisWeekVisitors();
+  document.getElementById('homeVisitorsSub').textContent = tv.length ? `${tv.length}名` : '';
+  document.getElementById('homeVisitors').innerHTML = tv.length ? tv.map(v => `
+    <div style="margin-bottom:10px; padding-bottom:10px; border-bottom:1px solid var(--border);">
+      <div style="font-weight:700; font-size:13.5px;">${v.name}</div>
+      <div style="font-size:12px; color:var(--ink-muted);">${[v.company, v.category, v.specialty].filter(Boolean).join(' ／ ')}</div>
+      ${v.referrer ? `<div style="font-size:11.5px; color:var(--ink-soft); margin-top:2px;">紹介者：${v.referrer}</div>` : ''}
+    </div>
+  `).join('') : `<div class="note">今週のビジター登録はまだありません。</div>`;
+
+  // ---- 直近のスケジュール（5件） ----
+  const upcoming = upcomingScheduleList(5);
+  document.getElementById('homeSchedule').innerHTML = upcoming.length ? `
+    <div>
+      ${upcoming.map(ev => scheduleRowHTML(ev)).join('')}
+    </div>
+  ` : `<div class="note">今後のスケジュールはまだ登録されていません。</div>`;
+
+  // ---- チーム別進捗（サンプルデータ） ----
   const grid = document.getElementById('homeTeamProgress');
   grid.innerHTML = '';
   Object.entries(TEAM_META).forEach(([key, t]) => {
@@ -762,6 +870,185 @@ function attBarsHTML(counts, noAnswer){
       <div class="progress-label"><span>${label}</span><span>${val}名</span></div>
       <div class="progress"><div style="width:${total? (val/total*100):0}%; background:${color}"></div></div>
     </div>`).join('');
+}
+
+/* =========================================================
+   RENDER: SCHEDULE（スケジュール一覧・詳細・出欠回答）
+   ========================================================= */
+function attrSafe_(s){ return String(s||'').replace(/"/g, '&quot;').replace(/'/g, '&#39;'); }
+
+function scheduleRowHTML(ev){
+  const dateLabel = ev.date ? ev.date.slice(5).replace('-','/') : '';
+  return `
+    <div class="card doc-row schedule-row" data-date="${attrSafe_(ev.date)}" data-title="${attrSafe_(ev.title)}" style="cursor:pointer; margin-bottom:10px;">
+      <div class="doc-icon">${dateLabel}</div>
+      <div style="min-width:0;">
+        <p class="name">${ev.title}</p>
+        <div class="meta">${[ev.host, ev.place].filter(Boolean).join(' ／ ')}</div>
+      </div>
+      <div class="spacer"></div>
+      ${ev.url ? `<span class="tag status-good">要申込</span>` : ''}
+    </div>`;
+}
+
+function bindScheduleRows_(container){
+  container.querySelectorAll('.schedule-row').forEach(row => {
+    row.onclick = () => openScheduleDetail(row.dataset.date, row.dataset.title);
+  });
+}
+
+function renderSchedule(){
+  const list = document.getElementById('scheduleList');
+  if(!list) return;
+  const upcoming = upcomingScheduleList();
+  list.innerHTML = upcoming.length
+    ? upcoming.map(ev => scheduleRowHTML(ev)).join('')
+    : `<div class="note">現在、公開されているスケジュールはありません。</div>`;
+  bindScheduleRows_(list);
+
+  // ホーム画面側の直近5件にもクリックを効かせる
+  const homeList = document.getElementById('homeSchedule');
+  if(homeList) bindScheduleRows_(homeList);
+}
+
+function openScheduleDetail(date, title){
+  const ev = scheduleEvents.find(e => e.date === date && e.title === title);
+  if(!ev) return;
+  showView('schedule');
+  document.getElementById('scheduleListWrap').style.display = 'none';
+  document.getElementById('scheduleDetailWrap').style.display = '';
+
+  const respondents = attendanceRecords.filter(a => a.eventDate === date && a.eventTitle === title);
+  const memberOptions = members.slice().sort((a,b) => (a.kana||a.name).localeCompare(b.kana||b.name, 'ja'))
+    .map(m => `<option value="${attrSafe_(m.name)}">${m.name}</option>`).join('');
+
+  document.getElementById('scheduleDetailBody').innerHTML = `
+    <div class="card" style="padding:20px; margin-bottom:16px;">
+      <div class="section-title" style="font-size:16px;">${ev.title}</div>
+      <div class="section-sub">${[ev.host, ev.date, ev.time, ev.place].filter(Boolean).join(' ／ ')}</div>
+      ${ev.note ? `<div class="note" style="margin-top:8px;">${ev.note}</div>` : ''}
+      ${ev.url ? `<a class="btn primary" style="display:inline-block; margin-top:12px; text-decoration:none;" href="${ev.url}" target="_blank" rel="noopener noreferrer">申し込みページを開く（新しいウィンドウ）</a>` : ''}
+    </div>
+
+    <div class="grid cols-2" style="align-items:start;">
+      <div class="card" style="padding:20px;">
+        <div class="section-title" style="font-size:14px;">出欠を回答する</div>
+        <form id="eventAttendanceForm">
+          <div class="form-grid">
+            <div class="field full">
+              <label for="evAttMember">お名前</label>
+              <select id="evAttMember" required>
+                <option value="">選択してください</option>
+                ${memberOptions}
+              </select>
+            </div>
+            <div class="field full">
+              <label>出欠</label>
+              <div class="radio-group">
+                <label><input type="radio" name="evAttStatus" value="出席" checked> 出席</label>
+                <label><input type="radio" name="evAttStatus" value="欠席"> 欠席</label>
+              </div>
+            </div>
+          </div>
+          <button class="btn primary" type="submit" style="margin-top:14px;">回答を送信</button>
+        </form>
+      </div>
+      <div class="card" style="padding:20px;">
+        <div class="section-title" style="font-size:14px;">回答状況（${respondents.length}名）</div>
+        <div id="eventAttendanceList">${eventAttendanceListHTML_(respondents)}</div>
+      </div>
+    </div>
+  `;
+
+  // タイトルや日付に引用符などが含まれていても壊れないよう、
+  // フォームの送信イベントはHTML文字列に埋め込まず、ここで直接バインドします。
+  document.getElementById('eventAttendanceForm').onsubmit = (evt) => submitEventAttendance(evt, date, title);
+}
+
+function eventAttendanceListHTML_(rows){
+  if(!rows.length) return `<div class="note">まだ回答はありません。</div>`;
+  return `<table class="plain"><tbody>${rows.map(r => `
+    <tr><td>${r.name}</td><td>${statusTag(r.status)}</td></tr>
+  `).join('')}</tbody></table>`;
+}
+
+function closeScheduleDetail(){
+  document.getElementById('scheduleDetailWrap').style.display = 'none';
+  document.getElementById('scheduleListWrap').style.display = '';
+}
+
+function submitEventAttendance(event, date, title){
+  event.preventDefault();
+  const name = document.getElementById('evAttMember').value;
+  const status = document.querySelector('input[name="evAttStatus"]:checked').value;
+  if(!name){ toast('お名前を選択してください'); return false; }
+
+  const btn = event.target.querySelector('button[type="submit"]');
+  if(btn){ btn.disabled = true; btn.textContent = '送信中…'; }
+
+  fetch(MEMBER_API_URL, {
+    method: 'POST',
+    mode: 'no-cors', // GAS側のCORS制約を避けるため。応答内容は読み取れませんが送信自体は行われます。
+    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+    body: JSON.stringify({ eventDate: date, eventTitle: title, name: name, status: status }),
+  }).then(() => {
+    attendanceRecords.push({ eventDate: date, eventTitle: title, name: name, status: status });
+    document.getElementById('eventAttendanceList').innerHTML =
+      eventAttendanceListHTML_(attendanceRecords.filter(a => a.eventDate === date && a.eventTitle === title));
+    toast('回答を送信しました');
+    if(btn){ btn.disabled = false; btn.textContent = '回答を送信'; }
+  }).catch(() => {
+    toast('送信に失敗しました。通信環境をご確認のうえ、もう一度お試しください。');
+    if(btn){ btn.disabled = false; btn.textContent = '回答を送信'; }
+  });
+
+  return false;
+}
+
+/* =========================================================
+   RENDER: PASSPORT PROGRAM（パスポートプログラム進捗）
+   ========================================================= */
+function renderPassport(){
+  const list = document.getElementById('passportList');
+  if(!list) return;
+
+  const sub = document.getElementById('passportSub');
+  if(sub) sub.textContent = `新メンバーの1to1メンタリング進捗です（全${passportTotal_()}項目）。`;
+
+  if(!passportProgress.length){
+    list.innerHTML = `<div class="note">パスポートプログラムの進捗はまだ登録されていません。</div>`;
+    return;
+  }
+
+  list.innerHTML = passportProgress.map(p => {
+    const total = passportTotal_();
+    const done = passportDoneCount_(p);
+    const pct = total ? Math.round(done / total * 100) : 0;
+    const rows = passportItems.map(it => {
+      const doneDate = p.items && p.items[it.id];
+      return `
+        <tr>
+          <td>${it.name || it.id}</td>
+          <td style="color:var(--ink-muted); font-size:12px;">${it.mentor || ''}</td>
+          <td>${doneDate ? `<span class="tag status-good">${doneDate}</span>` : `<span class="tag status-neutral">未実施</span>`}</td>
+        </tr>`;
+    }).join('');
+    return `
+      <div class="card" style="padding:20px; margin-bottom:16px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
+          <div>
+            <div style="font-weight:700; font-size:15px;">${p.name}</div>
+            <div class="section-sub" style="margin:2px 0 0;">${[p.team, p.overallMentor ? '全体メンター：'+p.overallMentor : '', p.personalMentor ? 'パーソナルメンター：'+p.personalMentor : ''].filter(Boolean).join(' ／ ')}</div>
+          </div>
+          <div style="text-align:right;">
+            <div style="font-weight:800; font-size:18px;">${done}/${total}</div>
+            <div style="font-size:11.5px; color:var(--ink-muted);">完了</div>
+          </div>
+        </div>
+        <div class="progress" style="margin-top:12px;"><div style="width:${pct}%"></div></div>
+        <table class="plain" style="margin-top:14px;"><tbody>${rows}</tbody></table>
+      </div>`;
+  }).join('');
 }
 
 /* =========================================================
@@ -1046,7 +1333,61 @@ function applyMembersFromAPI(payload){
     photoPosition: m.photoPosition || '',
     website: m.website || '',
     gender: m.gender || '',
+    joinDate: m.joinDate || '',
   }));
+
+  weeklyRotation = Array.isArray(payload.rotation) ? payload.rotation.map(r => ({
+    week: r.week || '',
+    presenter1: r.presenter1 || '',
+    topic1: r.topic1 || '',
+    presenter2: r.presenter2 || '',
+    topic2: r.topic2 || '',
+    eighty: r.eighty || '',
+  })) : [];
+
+  visitors = Array.isArray(payload.visitors) ? payload.visitors.map(v => ({
+    week: v.week || '',
+    name: v.name || '',
+    company: v.company || '',
+    category: v.category || '',
+    specialty: v.specialty || '',
+    referrer: v.referrer || '',
+  })) : [];
+
+  scheduleEvents = Array.isArray(payload.schedule) ? payload.schedule.map(s => ({
+    title: s.title || '',
+    host: s.host || '',
+    date: s.date || '',
+    time: s.time || '',
+    place: s.place || '',
+    url: s.url || '',
+    note: s.note || '',
+  })) : [];
+
+  passportItems = Array.isArray(payload.passportItems) ? payload.passportItems.map(p => ({
+    id: p.id || '',
+    name: p.name || '',
+    content: p.content || '',
+    mentor: p.mentor || '',
+  })) : [];
+
+  passportProgress = Array.isArray(payload.passportProgress) ? payload.passportProgress.map(p => ({
+    name: p.name || '',
+    team: p.team || '',
+    joinDate: p.joinDate || '',
+    deadline: p.deadline || '',
+    overallMentor: p.overallMentor || '',
+    personalMentor: p.personalMentor || '',
+    items: p.items || {},
+  })) : [];
+
+  attendanceRecords = Array.isArray(payload.attendance) ? payload.attendance.map(a => ({
+    eventDate: a.eventDate || '',
+    eventTitle: a.eventTitle || '',
+    name: a.name || '',
+    status: a.status || '',
+  })) : [];
+
   renderAll();
   setDataSourceBadge('live');
   return true;
@@ -1118,6 +1459,8 @@ function renderAll(){
   renderDocs();
   renderAttendanceOptions();
   renderAttendance();
+  renderSchedule();
+  renderPassport();
   renderTasks();
   renderTeams();
   renderMaster();
