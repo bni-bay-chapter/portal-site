@@ -14,7 +14,7 @@
   比べて、違っていた場合だけ静かに1回だけ読み込み直します（URLは変えません。LINEや
   Messenger等で共有した際に、リンクが長くなったり、表示が崩れたりしないようにするためです）。
 -->
-<script>window.__BNI_BUILD_ID__ = '2026-09-28-05';</script>
+<script>window.__BNI_BUILD_ID__ = '2026-09-28-06';</script>
 <script>
 (function(){
   try{
@@ -587,6 +587,30 @@ const TEAM_META = {
   event:      { label:'イベント・広報委員会',       color:'var(--team-event)',      desc:'チャプター内イベントの企画運営と、対外的な広報・SNS発信を担当します。', cadence:'月1回 企画会議' },
 };
 
+// 会員マスターの「所属チーム」列は表記ゆれがあり得るため、代表的な別表記を吸収します。
+// ここに載っていない文字列は、そのままチーム名としてカードを自動生成します。
+const TEAM_ALIASES = {
+  LT:         ['LT', 'エルティー', 'リーダーシップチーム', 'リーダーシップ'],
+  membership: ['membership', 'メンバーシップ', 'メンバーシップ委員会', 'MC'],
+  vcc:        ['vcc', 'VCC', '来訪者委員会', 'ビジター委員会'],
+  event:      ['event', 'イベント', 'イベント委員会', 'イベント・広報委員会', 'イベント広報委員会', '広報委員会', '広報', 'PR'],
+};
+function normalizeTeamText_(s){
+  return String(s || '').replace(/[\s　]/g, '').toLowerCase();
+}
+// 所属チームの生テキストから、既知のチームキー（LT/membership/vcc/event）か、
+// 一致しなければ元の文字列そのものをキーとして返します（動的チームカード用）。
+// 「none」は「チーム未設定」を表す内部の目印なので、チーム紹介からは除外します。
+function resolveTeamKey_(raw){
+  const norm = normalizeTeamText_(raw);
+  if(!norm || norm === 'none') return '';
+  for(const key in TEAM_ALIASES){
+    if(TEAM_ALIASES[key].some(a => normalizeTeamText_(a) === norm)) return key;
+  }
+  return String(raw).trim();
+}
+const TEAM_AUTO_PALETTE = ['#8a6dd1', '#d1748a', '#4fa3d9', '#d9a24f', '#5fb98c', '#b06fd1', '#e08a5c', '#5cb3b0'];
+
 // マスター（API）からの読み込みが終わるまでは true になりません。
 // これが false の間は、ホーム画面・メンバー一覧に下のサンプル人物名を
 // 表示せず、「読み込み中」の表示にします（実データ取得後 or タイムアウト後に true へ）。
@@ -924,6 +948,12 @@ function renderHome(){
    ========================================================= */
 function attrSafe_(s){ return String(s||'').replace(/"/g, '&quot;').replace(/'/g, '&#39;'); }
 
+// タイトルに「定例会」を含むイベントは、申込不要の通常例会とみなし、
+// URLが入っていても「要申込」表示や申込ボタンは出しません。
+function requiresApplicationLink_(ev){
+  return !!(ev.url && !/定例会/.test(ev.title || ''));
+}
+
 function scheduleRowHTML(ev){
   const dateLabel = ev.date ? ev.date.slice(5).replace('-','/') : '';
   return `
@@ -934,7 +964,7 @@ function scheduleRowHTML(ev){
         <div class="meta">${ev.place || ''}</div>
       </div>
       <div class="spacer"></div>
-      ${ev.url ? `<span class="tag status-good">要申込</span>` : ''}
+      ${requiresApplicationLink_(ev) ? `<span class="tag status-good">要申込</span>` : ''}
     </div>`;
 }
 
@@ -973,7 +1003,7 @@ function openScheduleDetail(eventId){
     <div class="card" style="padding:20px; margin-bottom:16px;">
       <div class="section-title" style="font-size:16px;">${ev.title}</div>
       <div class="section-sub">${[ev.date, ev.time, ev.place].filter(Boolean).join(' ／ ')}</div>
-      ${ev.url ? `<a class="btn primary" style="display:inline-block; margin-top:12px; text-decoration:none;" href="${ev.url}" target="_blank" rel="noopener noreferrer">申し込みページを開く（新しいウィンドウ）</a>` : ''}
+      ${requiresApplicationLink_(ev) ? `<a class="btn primary" style="display:inline-block; margin-top:12px; text-decoration:none;" href="${ev.url}" target="_blank" rel="noopener noreferrer">申し込みページを開く（新しいウィンドウ）</a>` : ''}
     </div>
 
     <div class="grid cols-2" style="align-items:start;">
@@ -1449,22 +1479,46 @@ function renderTasks(){
 function renderTeams(){
   const grid = document.getElementById('teamGrid');
   grid.innerHTML = '';
-  Object.entries(TEAM_META).forEach(([key, t]) => {
-    const roster = members.filter(m => m.team === key);
-    const leader = roster.find(m => m.role !== '委員') || roster[0];
+
+  // 会員マスターの「所属チーム」を見て、実際にメンバーがいるチームだけをカード表示します。
+  // 未設定（空欄・"none"）のメンバーはチーム紹介には出しません。
+  const groups = {};
+  const order = [];
+  members.forEach(m => {
+    const key = resolveTeamKey_(m.team);
+    if(!key) return;
+    if(!groups[key]){
+      const known = TEAM_META[key];
+      groups[key] = known
+        ? { label: known.label, color: known.color, desc: known.desc, cadence: known.cadence, roster: [] }
+        : { label: key, color: '', desc: '', cadence: '', roster: [] };
+      order.push(key);
+    }
+    groups[key].roster.push(m);
+  });
+
+  if(!order.length){
+    grid.innerHTML = `<div class="note">${membersReady ? '会員マスターの「所属チーム」が設定されているメンバーはまだいません。' : '読み込み中です…'}</div>`;
+    return;
+  }
+
+  let autoIdx = 0;
+  order.forEach(key => {
+    const g = groups[key];
+    if(!g.color) g.color = TEAM_AUTO_PALETTE[autoIdx++ % TEAM_AUTO_PALETTE.length];
     const div = document.createElement('div');
     div.className = 'card team-card';
-    div.style.setProperty('--c', t.color);
+    div.style.setProperty('--c', g.color);
     div.innerHTML = `
       <div class="head">
         <div>
-          <h3>${t.label}</h3>
-          <p class="lead">${leader ? '委員長：'+leader.name : ''} ・ ${t.cadence}</p>
+          <h3>${g.label}</h3>
+          <p class="lead">${g.roster.length}名${g.cadence ? ' ・ '+g.cadence : ''}</p>
         </div>
       </div>
-      <p class="desc">${t.desc}</p>
+      ${g.desc ? `<p class="desc">${g.desc}</p>` : ''}
       <div class="chip-row">
-        ${roster.map(m => `<span class="member-chip">${m.name}（${m.category}）</span>`).join('') || '<span class="note">メンバー未登録</span>'}
+        ${g.roster.map(m => `<span class="member-chip">${m.name}（${m.category}）</span>`).join('')}
       </div>
     `;
     grid.appendChild(div);
