@@ -301,12 +301,11 @@
     <div class="brand">
       <div class="eyebrow">CHAPTER PORTAL SITE</div>
       <h1>Bayチャプター<br>ポータルサイト</h1>
-      <div class="sub">メンバー一覧はマスターと連携／その他は準備中</div>
     </div>
     <nav class="tabs" id="navTabs"></nav>
     <div class="sidebar-foot">
       運営：Webチーム<br>
-      最終更新：2026/09/16
+      <span id="lastUpdatedFoot">最終更新：—</span>
     </div>
   </aside>
 
@@ -314,7 +313,7 @@
   <div class="main">
     <div class="topbar">
       <h2 id="viewTitle">ホーム</h2>
-      <div class="meta" id="viewMeta">2026年9月16日（水）</div>
+      <div class="meta" id="viewMeta"></div>
     </div>
 
     <div class="content">
@@ -332,8 +331,6 @@
               <li><strong>スケジュール</strong> … リージョン／チャプター主催イベントの一覧と出欠回答</li>
               <li><strong>パスポートプログラム</strong> … 新メンバーの1to1メンタリング進捗</li>
               <li><strong>資料室</strong> … 規約やテンプレートなど各種資料をまとめて掲載</li>
-              <li><strong>タスク・進捗</strong> … 各委員会のタスクと進捗を一目で確認</li>
-              <li><strong>マスターデータ</strong> … 運営担当者向け：メンバー情報の一元管理の仕組み</li>
             </ul>
           </div>
           <button class="close" onclick="document.getElementById('onboardCallout').style.display='none'">閉じる ×</button>
@@ -359,10 +356,6 @@
         <div class="section-title">直近のスケジュール</div>
         <div class="section-sub">クリックすると詳細・出欠回答画面へ移動します（すべて見るには左メニューの「スケジュール」へ）</div>
         <div id="homeSchedule" style="margin-bottom:22px;"></div>
-
-        <div class="section-title">チーム別 進捗状況</div>
-        <div class="section-sub">タスクの完了率を一目で確認できます（詳細は「タスク・進捗」タブへ）</div>
-        <div class="grid cols-4" id="homeTeamProgress"></div>
 
       </section>
 
@@ -428,14 +421,13 @@
       <!-- ---------- DOCS ---------- -->
       <section class="view" id="view-docs">
         <div class="section-title">資料室</div>
-        <div class="section-sub">チャプター運営に関わる各種資料です。カテゴリごとに整理しています。</div>
+        <div class="section-sub">チャプター運営に関わる各種資料です。カテゴリごとに整理しています（「資料室」シートを編集すると、ここに反映されます）。</div>
         <div class="toolbar">
           <select id="docFilter" onchange="renderDocs()">
             <option value="">すべてのカテゴリ</option>
           </select>
         </div>
         <div class="card" id="docList"></div>
-        <p class="note">※ デモページのため、実際のファイルは格納されていません。実運用ではGoogleドライブ等と連携し、最新版が自動的に表示される構成を想定しています。</p>
       </section>
 
       <!-- ATTENDANCE（旧: 毎週の定例会出欠デモ）は、Googleカレンダー連携のスケジュール機能に統合されたため削除しました。
@@ -475,7 +467,7 @@
       </section>
 
       <div class="footer-note">
-        メンバー一覧はベイチャプターの会員マスターと連携しています。プレゼンローテーション・資料室・タスク管理などその他の情報は、現時点ではまだサンプルデータです。
+        メンバー一覧・スピーカーローテーション・ビジター情報・スケジュール・パスポートプログラム・資料室は、いずれもベイチャプターのマスタースプレッドシート（およびGoogleカレンダー）と連携しています。
       </div>
 
     </div>
@@ -540,19 +532,9 @@ let scheduleEvents    = []; // スケジュール管理（リージョン/チャ
 let passportItems     = []; // パスポート担当者（項目定義）
 let passportProgress  = []; // パスポート進捗（新メンバーごと）
 let attendanceRecords = []; // 出欠管理（スケジュールへの回答一覧）
+let documents         = []; // 資料室（マスターの「資料室」シートで管理）
 
-// ↓ ここから下は、他タブ（資料室・タスク進捗など）のデモ表示用サンプルデータです
-const documents = [
-  { name:'チャプター規約（会則）',           category:'運営ルール',   updated:'2026/04/01', type:'PDF' },
-  { name:'週次議事録テンプレート',           category:'議事録',       updated:'2026/08/10', type:'Word' },
-  { name:'メンバーハンドブック（新メンバー向け）', category:'オンボーディング', updated:'2026/06/15', type:'PDF' },
-  { name:'VCC来訪者アンケート様式',          category:'VCC',          updated:'2026/07/01', type:'Excel' },
-  { name:'スポンサー・協賛資料',             category:'広報',         updated:'2026/05/20', type:'PowerPoint' },
-  { name:'ロゴ・ブランドガイドライン',       category:'広報',         updated:'2026/03/12', type:'PDF' },
-  { name:'年間活動スケジュール',             category:'運営ルール',   updated:'2026/04/01', type:'Excel' },
-  { name:'1to1シート（月次記録用）',         category:'メンバーシップ', updated:'2026/08/01', type:'Excel' },
-];
-
+// ↓ ここから下は、他タブ（タスク進捗など）のデモ表示用サンプルデータです
 const teamTasks = {
   LT: [
     { title:'月次運営会議のアジェンダ作成', assigneeId:2, status:'進行中', due:'09/25' },
@@ -635,9 +617,10 @@ const VIEWS = [
   { id:'docs',       label:'資料室',             count:()=>documents.length },
   { id:'schedule',   label:'スケジュール',       count:()=>scheduleEvents.length },
   { id:'passport',   label:'パスポートプログラム', count:()=>passportProgress.length },
-  { id:'tasks',      label:'タスク・進捗' },
   { id:'teams',      label:'チーム紹介',         count:()=>Object.keys(TEAM_META).length },
-  { id:'master',     label:'マスターデータ' },
+  // 「タスク・進捗」「マスターデータ」は、後日メンバーを限定した専用ページに
+  // する予定のため、いったんメニューから非表示にしています
+  // （中身のコード自体は残っているので、後で簡単に戻せます）。
 ];
 
 function buildNav(){
@@ -764,7 +747,6 @@ function renderHome(){
     document.getElementById('homeVisitors').innerHTML = '';
     document.getElementById('homeVisitorsSub').textContent = '';
     document.getElementById('homeSchedule').innerHTML = `<div class="note">読み込み中です…</div>`;
-    document.getElementById('homeTeamProgress').innerHTML = '';
     return;
   }
 
@@ -822,23 +804,6 @@ function renderHome(){
       ${upcoming.map(ev => scheduleRowHTML(ev)).join('')}
     </div>
   ` : `<div class="note">今後のスケジュールはまだ登録されていません。</div>`;
-
-  // ---- チーム別進捗（サンプルデータ） ----
-  const grid = document.getElementById('homeTeamProgress');
-  grid.innerHTML = '';
-  Object.entries(TEAM_META).forEach(([key, t]) => {
-    const tasks = teamTasks[key];
-    const done = tasks.filter(x => x.status === '完了').length;
-    const pct = Math.round(done / tasks.length * 100);
-    const div = document.createElement('div');
-    div.className = 'card stat-tile';
-    div.innerHTML = `
-      <div class="label">${t.label}</div>
-      <div class="progress" style="--c:${t.color}"><div style="width:${pct}%"></div></div>
-      <div class="progress-label"><span>${done}/${tasks.length} 完了</span><span>${pct}%</span></div>
-    `;
-    grid.appendChild(div);
-  });
 }
 
 /* =========================================================
@@ -1204,24 +1169,44 @@ function renderRotation(){
    ========================================================= */
 function renderDocs(){
   const sel = document.getElementById('docFilter');
-  if(sel.options.length <= 1){
-    [...new Set(documents.map(d => d.category))].forEach(c => {
+  const list = document.getElementById('docList');
+
+  if(!membersReady){
+    list.innerHTML = `<div class="note">読み込み中です…</div>`;
+    return;
+  }
+  if(!documents.length){
+    list.innerHTML = `<div class="note">資料はまだ登録されていません。「資料室」シートに行を追加してください。</div>`;
+    return;
+  }
+
+  // カテゴリの選択肢は、データが揃ったタイミングで一度だけ作り直す
+  const existing = new Set([...sel.options].map(o => o.value).filter(Boolean));
+  const categories = [...new Set(documents.map(d => d.category).filter(Boolean))];
+  if(categories.some(c => !existing.has(c))){
+    sel.innerHTML = '<option value="">すべてのカテゴリ</option>';
+    categories.forEach(c => {
       const o = document.createElement('option'); o.value=c; o.textContent=c; sel.appendChild(o);
     });
   }
+
   const filter = sel.value;
-  const list = document.getElementById('docList');
-  list.innerHTML = documents.filter(d => !filter || d.category===filter).map(d => `
+  list.innerHTML = documents.filter(d => !filter || d.category===filter).map(d => {
+    const iconLabel = d.type ? d.type.slice(0,3).toUpperCase() : '資料';
+    const openBtn = d.url
+      ? `<a class="btn" href="${d.url}" target="_blank" rel="noopener noreferrer">資料を開く</a>`
+      : `<button class="btn" disabled title="URLが未設定です">資料を開く</button>`;
+    return `
     <div class="doc-row">
-      <div class="doc-icon">${d.type.slice(0,3).toUpperCase()}</div>
+      <div class="doc-icon">${iconLabel}</div>
       <div>
         <p class="name">${d.name}</p>
-        <div class="meta">${d.category} ・ 更新日 ${d.updated}</div>
+        <div class="meta">${[d.category, d.updated ? '更新日 '+d.updated : ''].filter(Boolean).join(' ・ ')}</div>
       </div>
       <div class="spacer"></div>
-      <button class="btn" disabled title="デモのため無効化しています">資料を開く</button>
-    </div>
-  `).join('');
+      ${openBtn}
+    </div>`;
+  }).join('');
 }
 
 /* =========================================================
@@ -1427,6 +1412,15 @@ function applyMembersFromAPI(payload){
     status: a.status || '',
   })) : [];
 
+  documents = Array.isArray(payload.documents) ? payload.documents.map(d => ({
+    name: d.name || '',
+    category: d.category || '',
+    type: d.type || '',
+    url: d.url || '',
+    updated: d.updated || '',
+  })) : [];
+
+  updateLastUpdatedFoot(payload.updatedAt);
   renderAll();
   setDataSourceBadge('live');
   return true;
@@ -1489,9 +1483,30 @@ function loadMembersFromAPI(attempt){
 }
 
 /* =========================================================
+   日付表示（トップバーの「今日の日付」・左下の「最終更新」）
+   ========================================================= */
+function formatJaDate_(d){
+  const w = ['日','月','火','水','木','金','土'][d.getDay()];
+  return `${d.getFullYear()}年${d.getMonth()+1}月${d.getDate()}日（${w}）`;
+}
+function renderTopMeta(){
+  const el = document.getElementById('viewMeta');
+  if(el) el.textContent = formatJaDate_(new Date());
+}
+function updateLastUpdatedFoot(iso){
+  const el = document.getElementById('lastUpdatedFoot');
+  if(!el) return;
+  const d = iso ? new Date(iso) : null;
+  if(!d || isNaN(d)){ el.textContent = '最終更新：—'; return; }
+  const pad = n => String(n).padStart(2, '0');
+  el.textContent = `最終更新：${d.getFullYear()}/${pad(d.getMonth()+1)}/${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+
+/* =========================================================
    INIT
    ========================================================= */
 function renderAll(){
+  renderTopMeta();
   renderHome();
   renderMembers();
   renderRotation();
