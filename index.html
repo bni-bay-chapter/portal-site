@@ -14,7 +14,7 @@
   比べて、違っていた場合だけ静かに1回だけ読み込み直します（URLは変えません。LINEや
   Messenger等で共有した際に、リンクが長くなったり、表示が崩れたりしないようにするためです）。
 -->
-<script>window.__BNI_BUILD_ID__ = '2026-09-28-07';</script>
+<script>window.__BNI_BUILD_ID__ = '2026-09-28-08';</script>
 <script>
 (function(){
   try{
@@ -620,10 +620,22 @@ function splitTeamValues_(raw){
     .filter(Boolean);
 }
 
-// 「所属チーム」（役職・肩書き）の文字列に「リーダー」「委員長」「会長」が含まれる場合、
-// そのチーム内でのリーダー的な立場とみなします。
+// 「所属チーム」（役職・肩書き）の文字列から、リーダー／副リーダー的な立場かどうかを判定します。
+// 「副リーダー」「副委員長」「副会長」は、先に判定してリーダー判定から除外します
+// （「副リーダー」も文字列として「リーダー」を含んでしまうため）。
+function isSubLeaderRole_(role){
+  return /副リーダー|副委員長|副会長/.test(String(role || ''));
+}
 function isLeaderRole_(role){
-  return /リーダー|委員長|会長/.test(String(role || ''));
+  const r = String(role || '');
+  if(isSubLeaderRole_(r)) return false;
+  return /リーダー|委員長|会長/.test(r);
+}
+// 並び順用：リーダー→副リーダー→それ以外、の順にするための数値を返します。
+function leaderRank_(role){
+  if(isLeaderRole_(role)) return 0;
+  if(isSubLeaderRole_(role)) return 1;
+  return 2;
 }
 
 // 会員マスターの「委員会」を、複数チーム所属にも対応してグループ化します。
@@ -1533,8 +1545,8 @@ function renderTeams(){
   order.forEach(key => {
     const g = groups[key];
     if(!g.color) g.color = TEAM_AUTO_PALETTE[autoIdx++ % TEAM_AUTO_PALETTE.length];
-    // リーダー（役職に「リーダー」「委員長」「会長」を含む人）を先頭に表示します。
-    const roster = g.roster.slice().sort((a, b) => (isLeaderRole_(b.role) ? 1 : 0) - (isLeaderRole_(a.role) ? 1 : 0));
+    // リーダー（役職に「リーダー」「委員長」「会長」を含む人）→副リーダー（「副リーダー」等）→それ以外、の順に並べます。
+    const roster = g.roster.slice().sort((a, b) => leaderRank_(a.role) - leaderRank_(b.role));
     const div = document.createElement('div');
     div.className = 'card team-card';
     div.style.setProperty('--c', g.color);
@@ -1547,7 +1559,14 @@ function renderTeams(){
       </div>
       ${g.desc ? `<p class="desc">${g.desc}</p>` : ''}
       <div class="chip-row">
-        ${roster.map(m => `<span class="member-chip">${m.name}${isLeaderRole_(m.role) ? `<span class="tag status-good" style="margin-left:5px; padding:1px 6px; font-size:9.5px; vertical-align:middle;">リーダー</span>` : ''}（${m.category}）</span>`).join('')}
+        ${roster.map(m => {
+          const badge = isLeaderRole_(m.role)
+            ? `<span class="tag status-good" style="margin-left:5px; padding:1px 6px; font-size:9.5px; vertical-align:middle;">リーダー</span>`
+            : isSubLeaderRole_(m.role)
+              ? `<span class="tag status-warn" style="margin-left:5px; padding:1px 6px; font-size:9.5px; vertical-align:middle;">副リーダー</span>`
+              : '';
+          return `<span class="member-chip">${m.name}${badge}（${m.category}）</span>`;
+        }).join('')}
       </div>
     `;
     grid.appendChild(div);
