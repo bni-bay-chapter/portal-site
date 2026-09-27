@@ -4,29 +4,44 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <!-- サイトのコード（このindex.html自体）が更新された後、閲覧者のブラウザに
-     古い内容がキャッシュされて残るのをできるだけ防ぐための指定です。
-     ただしmetaタグの指定だけではブラウザ・GitHub Pages側のキャッシュを
-     完全には防げないため、下のスクリプトで「毎回、必ずキャッシュを
-     経由しない新しいURLとして読み込み直す」対策もあわせて行っています。 -->
+     古い内容がキャッシュされて残るのをできるだけ防ぐための指定です。 -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
+<!--
+  BUILD_ID: このファイルを新しく書き出す（アップロードする）たびに、下の値を変えてください。
+  下のスクリプトが「今表示しているページ」と「サーバー上の最新ファイル」のBUILD_IDを
+  比べて、違っていた場合だけ静かに1回だけ読み込み直します（URLは変えません。LINEや
+  Messenger等で共有した際に、リンクが長くなったり、表示が崩れたりしないようにするためです）。
+-->
+<script>window.__BNI_BUILD_ID__ = '2026-09-28-01';</script>
 <script>
 (function(){
-  // URLに ?_v=... が付いていない通常のアクセス（ブックマーク・リンク・直接入力など）の場合、
-  // 末尾に毎回変わる値を付けて即座に読み込み直します。ブラウザやGitHub Pagesのキャッシュは
-  // URL単位で効くため、こうすることで「毎回、確実に最新のファイルを取得」できます。
-  // （一度 _v 付きのURLに移動した後は、そのページ内では再度リダイレクトしません）
   try{
-    var u = new URL(location.href);
-    if(!u.searchParams.has('_v')){
-      u.searchParams.set('_v', Date.now().toString());
-      location.replace(u.toString());
-    }
-  }catch(e){ /* 万一失敗しても、通常表示を継続します */ }
+    var KEY = 'bniBuildChecked';
+    if(sessionStorage.getItem(KEY) === window.__BNI_BUILD_ID__) return;
+    fetch(location.pathname + location.search, { cache: 'no-store' })
+      .then(function(res){ return res.ok ? res.text() : null; })
+      .then(function(html){
+        if(!html) return;
+        sessionStorage.setItem(KEY, window.__BNI_BUILD_ID__);
+        var m = html.match(/__BNI_BUILD_ID__\s*=\s*'([^']+)'/);
+        if(m && m[1] && m[1] !== window.__BNI_BUILD_ID__){
+          location.reload();
+        }
+      })
+      .catch(function(){ /* 取得できなくても、通常表示を継続します */ });
+  }catch(e){}
 })();
 </script>
 <title>Bayチャプターポータルサイト</title>
+<meta name="description" content="BNIベイチャプターの運営ポータルサイトです。メンバー一覧・スピーカーローテーション・スケジュール・パスポートプログラムなどをまとめて確認できます。">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Bayチャプターポータルサイト">
+<meta property="og:title" content="Bayチャプターポータルサイト">
+<meta property="og:description" content="BNIベイチャプターの運営ポータルサイトです。メンバー一覧・スピーカーローテーション・スケジュール・パスポートプログラムなどをまとめて確認できます。">
+<meta property="og:url" content="https://bni-bay-chapter.github.io/portal-site/">
+<meta name="twitter:card" content="summary">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@500;700;800&family=Zen+Kaku+Gothic+New:wght@400;500;700;900&display=swap" rel="stylesheet">
