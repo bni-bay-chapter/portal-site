@@ -363,9 +363,15 @@
 
       <!-- ---------- PASSPORT PROGRAM ---------- -->
       <section class="view" id="view-passport">
-        <div class="section-title">パスポートプログラム進捗</div>
-        <div class="section-sub" id="passportSub">新メンバーの1to1メンタリング進捗です。</div>
-        <div id="passportList"></div>
+        <div id="passportListWrap">
+          <div class="section-title">パスポートプログラム進捗</div>
+          <div class="section-sub" id="passportSub">新メンバーの1to1メンタリング進捗です。名前をクリックすると詳細画面へ移動します。</div>
+          <div id="passportList"></div>
+        </div>
+        <div id="passportDetailWrap" style="display:none;">
+          <button class="btn" onclick="closePassportDetail()">← 一覧に戻る</button>
+          <div id="passportDetailBody" style="margin-top:16px;"></div>
+        </div>
       </section>
 
       <!-- ---------- MEMBERS ---------- -->
@@ -390,15 +396,15 @@
 
       <!-- ---------- ROTATION ---------- -->
       <section class="view" id="view-rotation">
-        <div class="section-title">メインプレゼンテーション・ローテーション</div>
-        <div class="section-sub">今後5週分の担当スケジュールと資料準備状況です。担当者は原則、例会2週間前までに資料を提出します。</div>
+        <div class="section-title">スピーカーローテーション</div>
+        <div class="section-sub">週ごとのメインプレゼン2名・80秒プレゼンの一覧です（今週にあたる行はハイライトされます）。</div>
         <div class="card table-scroll">
           <table class="plain">
-            <thead><tr><th>例会日</th><th>担当メンバー</th><th>業種</th><th>準備状況</th><th>テーマ・トピック</th></tr></thead>
+            <thead><tr><th>週</th><th>メインプレゼン1</th><th>メインプレゼン2</th><th>80秒プレゼン</th></tr></thead>
             <tbody id="rotationBody"></tbody>
           </table>
         </div>
-        <p class="note">※ 実運用では「マスターデータ」で担当者を割り当てると、このローテーション表と出欠確認フォームの選択肢に自動反映される想定です。</p>
+        <p class="note">※ 「スピーカーローテーション」シートに行を追加すると、ここと、該当週にはホーム画面にも自動反映されます。</p>
       </section>
 
       <!-- ---------- DOCS ---------- -->
@@ -414,56 +420,8 @@
         <p class="note">※ デモページのため、実際のファイルは格納されていません。実運用ではGoogleドライブ等と連携し、最新版が自動的に表示される構成を想定しています。</p>
       </section>
 
-      <!-- ---------- ATTENDANCE ---------- -->
-      <section class="view" id="view-attendance">
-        <div class="section-title">出欠確認</div>
-        <div class="section-sub">次回以降の例会について、出欠を回答してください。</div>
-
-        <div class="grid cols-2" style="align-items:start;">
-          <div class="card" style="padding:20px;">
-            <div class="section-title" style="font-size:14px;">回答フォーム</div>
-            <form id="attendanceForm" onsubmit="return submitAttendance(event)">
-              <div class="form-grid">
-                <div class="field">
-                  <label for="attWeek">対象の例会日</label>
-                  <select id="attWeek"></select>
-                </div>
-                <div class="field">
-                  <label for="attMember">お名前</label>
-                  <select id="attMember"></select>
-                </div>
-                <div class="field full">
-                  <label>出欠</label>
-                  <div class="radio-group">
-                    <label><input type="radio" name="attStatus" value="出席" checked> 出席</label>
-                    <label><input type="radio" name="attStatus" value="欠席"> 欠席</label>
-                    <label><input type="radio" name="attStatus" value="60分ルール"> 60分ルール（代理出席）</label>
-                    <label><input type="radio" name="attStatus" value="遅刻"> 遅刻</label>
-                  </div>
-                </div>
-                <div class="field full">
-                  <label for="attComment">コメント（任意）</label>
-                  <textarea id="attComment" placeholder="ビジター同伴予定、遅刻理由など"></textarea>
-                </div>
-              </div>
-              <button class="btn primary" type="submit" style="margin-top:14px;">回答を送信</button>
-            </form>
-          </div>
-
-          <div class="card" style="padding:20px;">
-            <div class="section-title" style="font-size:14px;">回答状況サマリー</div>
-            <div class="section-sub" id="attSummarySub"></div>
-            <div id="attSummaryBars"></div>
-          </div>
-        </div>
-
-        <div class="card table-scroll" style="margin-top:18px;">
-          <table class="plain">
-            <thead><tr><th>例会日</th><th>氏名</th><th>出欠</th><th>コメント</th></tr></thead>
-            <tbody id="attTableBody"></tbody>
-          </table>
-        </div>
-      </section>
+      <!-- ATTENDANCE（旧: 毎週の定例会出欠デモ）は、Googleカレンダー連携のスケジュール機能に統合されたため削除しました。
+           出欠回答は「スケジュール」タブの各イベント詳細から行います。 -->
 
       <!-- ---------- TASKS ---------- -->
       <section class="view" id="view-tasks">
@@ -484,7 +442,7 @@
         <div class="section-title">マスターデータ管理（運営担当者向け）</div>
         <div class="master-note">
           <strong>この仕組みについて：</strong> メンバー情報は下記の「メンバーマスター」1か所で管理し、そこから
-          <strong>メンバー一覧</strong>・<strong>ローテーション表</strong>・<strong>チーム紹介</strong>・<strong>出欠確認フォームの選択肢</strong>
+          <strong>メンバー一覧</strong>・<strong>スピーカーローテーション表</strong>・<strong>チーム紹介</strong>
           が自動的に反映される構成を想定しています。担当者が変わっても、このマスターの見方さえ分かれば運営を引き継げることを目指しています。<br><br>
           実運用では Google スプレッドシート等をマスターにし、フォーム送信やスクリプト（GAS等）による自動連携で他ページへ反映する形を想定しています。
           このデモでは仕組みを体験いただけるよう、下の表の氏名・業種・会社名・所属チームを直接編集すると、
@@ -558,22 +516,14 @@ const GENDER_COLORS = {
 const MEMBER_API_URL = 'https://script.google.com/macros/s/AKfycbwCpHflhEUfSbGa69FgVxTscfaM6wBSdNSCFopIq3O5Y-PzXdZb_875j75JOuAgqw2mLw/exec';
 
 // ↓ ここから、マスター連携の「実データ」用（API読み込み後に applyMembersFromAPI で入ります）
-let weeklyRotation   = []; // 週次ローテーション（メインプレゼン2名・80秒プレゼン）
+let speakerRotation   = []; // スピーカーローテーション（メインプレゼン2名・80秒プレゼン）
 let visitors         = []; // ビジター管理（週ごと・1人1行）
 let scheduleEvents    = []; // スケジュール管理（リージョン/チャプター主催イベント）
 let passportItems     = []; // パスポート担当者（項目定義）
 let passportProgress  = []; // パスポート進捗（新メンバーごと）
 let attendanceRecords = []; // 出欠管理（スケジュールへの回答一覧）
 
-// ↓ ここから下は、他タブ（プレゼンローテーション／出欠確認など）のデモ表示用サンプルデータです
-let rotation = [
-  { week:'2026/09/22（火）', memberId:3,  status:'準備完了',   topic:'ホームページ制作で信頼を獲得する方法' },
-  { week:'2026/09/29（火）', memberId:4,  status:'準備完了',   topic:'法人向け生命保険の活用事例' },
-  { week:'2026/10/06（火）', memberId:5,  status:'資料準備中', topic:'未定' },
-  { week:'2026/10/13（火）', memberId:6,  status:'未定',       topic:'未定' },
-  { week:'2026/10/20（火）', memberId:7,  status:'未定',       topic:'未定' },
-];
-
+// ↓ ここから下は、他タブ（資料室・タスク進捗など）のデモ表示用サンプルデータです
 const documents = [
   { name:'チャプター規約（会則）',           category:'運営ルール',   updated:'2026/04/01', type:'PDF' },
   { name:'週次議事録テンプレート',           category:'議事録',       updated:'2026/08/10', type:'Word' },
@@ -583,23 +533,6 @@ const documents = [
   { name:'ロゴ・ブランドガイドライン',       category:'広報',         updated:'2026/03/12', type:'PDF' },
   { name:'年間活動スケジュール',             category:'運営ルール',   updated:'2026/04/01', type:'Excel' },
   { name:'1to1シート（月次記録用）',         category:'メンバーシップ', updated:'2026/08/01', type:'Excel' },
-];
-
-let attendance = [
-  { week:'2026/09/22（火）', memberId:1, status:'出席', comment:'' },
-  { week:'2026/09/22（火）', memberId:2, status:'出席', comment:'' },
-  { week:'2026/09/22（火）', memberId:3, status:'出席', comment:'' },
-  { week:'2026/09/22（火）', memberId:4, status:'出席', comment:'' },
-  { week:'2026/09/22（火）', memberId:5, status:'出席', comment:'' },
-  { week:'2026/09/22（火）', memberId:6, status:'欠席', comment:'出張のため' },
-  { week:'2026/09/22（火）', memberId:7, status:'出席', comment:'' },
-  { week:'2026/09/22（火）', memberId:8, status:'出席', comment:'' },
-  { week:'2026/09/22（火）', memberId:9, status:'出席', comment:'' },
-  { week:'2026/09/22（火）', memberId:10, status:'60分ルール', comment:'代理：吉田様の秘書が出席予定' },
-  { week:'2026/09/22（火）', memberId:11, status:'出席', comment:'' },
-  { week:'2026/09/22（火）', memberId:12, status:'出席', comment:'' },
-  { week:'2026/09/22（火）', memberId:13, status:'欠席', comment:'' },
-  { week:'2026/09/22（火）', memberId:15, status:'出席', comment:'ビジター1名同伴予定' },
 ];
 
 const teamTasks = {
@@ -672,9 +605,8 @@ function toast(msg){
 const VIEWS = [
   { id:'home',       label:'ホーム' },
   { id:'members',    label:'メンバー一覧',       count:()=>members.length },
-  { id:'rotation',   label:'プレゼンローテーション', count:()=>rotation.length },
+  { id:'rotation',   label:'スピーカーローテーション', count:()=>speakerRotation.length },
   { id:'docs',       label:'資料室',             count:()=>documents.length },
-  { id:'attendance', label:'出欠確認' },
   { id:'schedule',   label:'スケジュール',       count:()=>scheduleEvents.length },
   { id:'passport',   label:'パスポートプログラム', count:()=>passportProgress.length },
   { id:'tasks',      label:'タスク・進捗' },
@@ -691,7 +623,7 @@ function buildNav(){
     const b1 = document.createElement('button');
     b1.textContent = v.label;
     b1.dataset.view = v.id;
-    if(v.count){ const n=document.createElement('span'); n.className='n'; n.textContent=v.count(); b1.appendChild(n); }
+    if(v.count){ const n=document.createElement('span'); n.className='n'; n.dataset.countFor=v.id; n.textContent=v.count(); b1.appendChild(n); }
     b1.onclick = () => navClick(v.id);
     nav.appendChild(b1);
 
@@ -700,6 +632,17 @@ function buildNav(){
     b2.dataset.view = v.id;
     b2.onclick = () => navClick(v.id);
     mob.appendChild(b2);
+  });
+}
+
+// buildNav()はページ読み込み時に一度だけ実行されるため、その時点ではまだ
+// マスターからの実データが届いておらず、メニューの件数（16名など）が
+// サンプルデータの数のまま固定されてしまっていました。
+// データが更新されるたびにこの関数を呼び、件数の数字だけを更新します。
+function updateNavCounts(){
+  VIEWS.forEach(v => {
+    if(!v.count) return;
+    document.querySelectorAll(`.n[data-count-for="${v.id}"]`).forEach(n => { n.textContent = v.count(); });
   });
 }
 
@@ -715,6 +658,7 @@ function showView(id){
 // クリックのたびに一覧画面から始まるようにする（詳細を開いたまま残さない）。
 function navClick(id){
   if(id === 'schedule') closeScheduleDetail();
+  if(id === 'passport') closePassportDetail();
   showView(id);
 }
 
@@ -736,7 +680,7 @@ function isSameWeek_(dateStr, ref){
 }
 function thisWeekRotation(){
   const today = new Date();
-  return weeklyRotation.find(r => isSameWeek_(r.week, today)) || null;
+  return speakerRotation.find(r => isSameWeek_(r.week, today)) || null;
 }
 function thisWeekVisitors(){
   const today = new Date();
@@ -856,22 +800,6 @@ function renderHome(){
   });
 }
 
-function attBarsHTML(counts, noAnswer){
-  const total = counts['出席']+counts['欠席']+counts['60分ルール']+counts['遅刻']+noAnswer;
-  const rows = [
-    ['出席', counts['出席'], 'var(--status-good)'],
-    ['遅刻', counts['遅刻'], 'var(--status-warn)'],
-    ['60分ルール', counts['60分ルール'], 'var(--status-warn)'],
-    ['欠席', counts['欠席'], 'var(--status-critical)'],
-    ['未回答', noAnswer, 'var(--status-neutral)'],
-  ].filter(r => r[1] > 0);
-  return rows.map(([label,val,color]) => `
-    <div style="margin-bottom:8px;">
-      <div class="progress-label"><span>${label}</span><span>${val}名</span></div>
-      <div class="progress"><div style="width:${total? (val/total*100):0}%; background:${color}"></div></div>
-    </div>`).join('');
-}
-
 /* =========================================================
    RENDER: SCHEDULE（スケジュール一覧・詳細・出欠回答）
    ========================================================= */
@@ -880,11 +808,11 @@ function attrSafe_(s){ return String(s||'').replace(/"/g, '&quot;').replace(/'/g
 function scheduleRowHTML(ev){
   const dateLabel = ev.date ? ev.date.slice(5).replace('-','/') : '';
   return `
-    <div class="card doc-row schedule-row" data-date="${attrSafe_(ev.date)}" data-title="${attrSafe_(ev.title)}" style="cursor:pointer; margin-bottom:10px;">
-      <div class="doc-icon">${dateLabel}</div>
+    <div class="card doc-row schedule-row" data-id="${attrSafe_(ev.id)}" style="cursor:pointer; margin-bottom:10px;">
+      <div class="doc-icon">${dateLabel}${ev.time ? `<br>${ev.time}` : ''}</div>
       <div style="min-width:0;">
         <p class="name">${ev.title}</p>
-        <div class="meta">${[ev.host, ev.place].filter(Boolean).join(' ／ ')}</div>
+        <div class="meta">${ev.place || ''}</div>
       </div>
       <div class="spacer"></div>
       ${ev.url ? `<span class="tag status-good">要申込</span>` : ''}
@@ -893,7 +821,7 @@ function scheduleRowHTML(ev){
 
 function bindScheduleRows_(container){
   container.querySelectorAll('.schedule-row').forEach(row => {
-    row.onclick = () => openScheduleDetail(row.dataset.date, row.dataset.title);
+    row.onclick = () => openScheduleDetail(row.dataset.id);
   });
 }
 
@@ -903,7 +831,7 @@ function renderSchedule(){
   const upcoming = upcomingScheduleList();
   list.innerHTML = upcoming.length
     ? upcoming.map(ev => scheduleRowHTML(ev)).join('')
-    : `<div class="note">現在、公開されているスケジュールはありません。</div>`;
+    : `<div class="note">${membersReady ? '現在、カレンダーに今後の予定はありません。' : '読み込み中です…'}</div>`;
   bindScheduleRows_(list);
 
   // ホーム画面側の直近5件にもクリックを効かせる
@@ -911,33 +839,33 @@ function renderSchedule(){
   if(homeList) bindScheduleRows_(homeList);
 }
 
-function openScheduleDetail(date, title){
-  const ev = scheduleEvents.find(e => e.date === date && e.title === title);
+function openScheduleDetail(eventId){
+  const ev = scheduleEvents.find(e => e.id === eventId);
   if(!ev) return;
   showView('schedule');
   document.getElementById('scheduleListWrap').style.display = 'none';
   document.getElementById('scheduleDetailWrap').style.display = '';
 
-  const respondents = attendanceRecords.filter(a => a.eventDate === date && a.eventTitle === title);
+  const respondents = attendanceRecords.filter(a => a.eventId === eventId);
   const memberOptions = members.slice().sort((a,b) => (a.kana||a.name).localeCompare(b.kana||b.name, 'ja'))
     .map(m => `<option value="${attrSafe_(m.name)}">${m.name}</option>`).join('');
 
   document.getElementById('scheduleDetailBody').innerHTML = `
     <div class="card" style="padding:20px; margin-bottom:16px;">
       <div class="section-title" style="font-size:16px;">${ev.title}</div>
-      <div class="section-sub">${[ev.host, ev.date, ev.time, ev.place].filter(Boolean).join(' ／ ')}</div>
-      ${ev.note ? `<div class="note" style="margin-top:8px;">${ev.note}</div>` : ''}
+      <div class="section-sub">${[ev.date, ev.time, ev.place].filter(Boolean).join(' ／ ')}</div>
       ${ev.url ? `<a class="btn primary" style="display:inline-block; margin-top:12px; text-decoration:none;" href="${ev.url}" target="_blank" rel="noopener noreferrer">申し込みページを開く（新しいウィンドウ）</a>` : ''}
     </div>
 
     <div class="grid cols-2" style="align-items:start;">
       <div class="card" style="padding:20px;">
         <div class="section-title" style="font-size:14px;">出欠を回答する</div>
+        <div class="section-sub">すでに回答済みの方が選び直すと、回答を修正できます。</div>
         <form id="eventAttendanceForm">
           <div class="form-grid">
             <div class="field full">
               <label for="evAttMember">お名前</label>
-              <select id="evAttMember" required>
+              <select id="evAttMember" required onchange="onEventAttMemberChange_('${attrSafe_(eventId)}')">
                 <option value="">選択してください</option>
                 ${memberOptions}
               </select>
@@ -949,6 +877,7 @@ function openScheduleDetail(date, title){
                 <label><input type="radio" name="evAttStatus" value="欠席"> 欠席</label>
               </div>
             </div>
+            <div class="field full" id="evAttCurrentNote"></div>
           </div>
           <button class="btn primary" type="submit" style="margin-top:14px;">回答を送信</button>
         </form>
@@ -962,7 +891,16 @@ function openScheduleDetail(date, title){
 
   // タイトルや日付に引用符などが含まれていても壊れないよう、
   // フォームの送信イベントはHTML文字列に埋め込まず、ここで直接バインドします。
-  document.getElementById('eventAttendanceForm').onsubmit = (evt) => submitEventAttendance(evt, date, title);
+  document.getElementById('eventAttendanceForm').onsubmit = (evt) => submitEventAttendance(evt, eventId);
+}
+
+// 名前を選ぶと、その人がすでに回答済みかどうかをその場で知らせる（修正のヒント）
+function onEventAttMemberChange_(eventId){
+  const name = document.getElementById('evAttMember').value;
+  const note = document.getElementById('evAttCurrentNote');
+  if(!note) return;
+  const existing = attendanceRecords.find(a => a.eventId === eventId && a.name === name);
+  note.innerHTML = existing ? `<div class="note">現在の回答：${existing.status}（送信し直すと上書きされます）</div>` : '';
 }
 
 function eventAttendanceListHTML_(rows){
@@ -977,8 +915,9 @@ function closeScheduleDetail(){
   document.getElementById('scheduleListWrap').style.display = '';
 }
 
-function submitEventAttendance(event, date, title){
+function submitEventAttendance(event, eventId){
   event.preventDefault();
+  const ev = scheduleEvents.find(e => e.id === eventId);
   const name = document.getElementById('evAttMember').value;
   const status = document.querySelector('input[name="evAttStatus"]:checked').value;
   if(!name){ toast('お名前を選択してください'); return false; }
@@ -990,11 +929,21 @@ function submitEventAttendance(event, date, title){
     method: 'POST',
     mode: 'no-cors', // GAS側のCORS制約を避けるため。応答内容は読み取れませんが送信自体は行われます。
     headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-    body: JSON.stringify({ eventDate: date, eventTitle: title, name: name, status: status }),
+    body: JSON.stringify({
+      action: 'attendance',
+      eventId: eventId,
+      eventDate: ev ? ev.date : '',
+      eventTitle: ev ? ev.title : '',
+      name: name,
+      status: status,
+    }),
   }).then(() => {
-    attendanceRecords.push({ eventDate: date, eventTitle: title, name: name, status: status });
+    const existing = attendanceRecords.find(a => a.eventId === eventId && a.name === name);
+    if(existing){ existing.status = status; }
+    else{ attendanceRecords.push({ eventId: eventId, eventDate: ev ? ev.date : '', eventTitle: ev ? ev.title : '', name: name, status: status }); }
     document.getElementById('eventAttendanceList').innerHTML =
-      eventAttendanceListHTML_(attendanceRecords.filter(a => a.eventDate === date && a.eventTitle === title));
+      eventAttendanceListHTML_(attendanceRecords.filter(a => a.eventId === eventId));
+    onEventAttMemberChange_(eventId);
     toast('回答を送信しました');
     if(btn){ btn.disabled = false; btn.textContent = '回答を送信'; }
   }).catch(() => {
@@ -1007,48 +956,132 @@ function submitEventAttendance(event, date, title){
 
 /* =========================================================
    RENDER: PASSPORT PROGRAM（パスポートプログラム進捗）
+   一覧 → 個人詳細（メンター/新メンバーがサイト上で完了操作できる）
    ========================================================= */
+function todayStr_(){
+  const d = new Date();
+  const pad = n => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+}
+
+function passportRowHTML_(p){
+  const total = passportTotal_();
+  const done = passportDoneCount_(p);
+  const pct = total ? Math.round(done / total * 100) : 0;
+  return `
+    <div class="card doc-row passport-row" data-name="${attrSafe_(p.name)}" style="cursor:pointer; margin-bottom:10px;">
+      <div style="min-width:0;">
+        <p class="name">${p.name}</p>
+        <div class="meta">${[p.team, p.overallMentor ? '全体メンター：'+p.overallMentor : ''].filter(Boolean).join(' ／ ')}</div>
+      </div>
+      <div class="spacer"></div>
+      <div style="text-align:right; min-width:90px;">
+        <div style="font-weight:800; font-size:16px;">${done}/${total}</div>
+        <div class="progress" style="margin-top:4px;"><div style="width:${pct}%"></div></div>
+      </div>
+    </div>`;
+}
+
+function bindPassportRows_(container){
+  container.querySelectorAll('.passport-row').forEach(row => {
+    row.onclick = () => openPassportDetail(row.dataset.name);
+  });
+}
+
 function renderPassport(){
   const list = document.getElementById('passportList');
   if(!list) return;
 
   const sub = document.getElementById('passportSub');
-  if(sub) sub.textContent = `新メンバーの1to1メンタリング進捗です（全${passportTotal_()}項目）。`;
+  if(sub) sub.textContent = `新メンバーの1to1メンタリング進捗です（全${passportTotal_()}項目）。名前をクリックすると詳細画面へ移動します。`;
 
   if(!passportProgress.length){
-    list.innerHTML = `<div class="note">パスポートプログラムの進捗はまだ登録されていません。</div>`;
+    list.innerHTML = `<div class="note">${membersReady ? 'パスポートプログラムの進捗はまだ登録されていません。' : '読み込み中です…'}</div>`;
     return;
   }
 
-  list.innerHTML = passportProgress.map(p => {
-    const total = passportTotal_();
-    const done = passportDoneCount_(p);
-    const pct = total ? Math.round(done / total * 100) : 0;
-    const rows = passportItems.map(it => {
-      const doneDate = p.items && p.items[it.id];
-      return `
-        <tr>
-          <td>${it.name || it.id}</td>
-          <td style="color:var(--ink-muted); font-size:12px;">${it.mentor || ''}</td>
-          <td>${doneDate ? `<span class="tag status-good">${doneDate}</span>` : `<span class="tag status-neutral">未実施</span>`}</td>
-        </tr>`;
-    }).join('');
+  list.innerHTML = passportProgress.map(p => passportRowHTML_(p)).join('');
+  bindPassportRows_(list);
+}
+
+function openPassportDetail(name){
+  const p = passportProgress.find(x => x.name === name);
+  if(!p) return;
+  showView('passport');
+  document.getElementById('passportListWrap').style.display = 'none';
+  document.getElementById('passportDetailWrap').style.display = '';
+
+  const total = passportTotal_();
+  const done = passportDoneCount_(p);
+  const pct = total ? Math.round(done / total * 100) : 0;
+
+  const rows = passportItems.map((it, idx) => {
+    const doneDate = p.items && p.items[it.id];
     return `
-      <div class="card" style="padding:20px; margin-bottom:16px;">
-        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
-          <div>
-            <div style="font-weight:700; font-size:15px;">${p.name}</div>
-            <div class="section-sub" style="margin:2px 0 0;">${[p.team, p.overallMentor ? '全体メンター：'+p.overallMentor : '', p.personalMentor ? 'パーソナルメンター：'+p.personalMentor : ''].filter(Boolean).join(' ／ ')}</div>
-          </div>
-          <div style="text-align:right;">
-            <div style="font-weight:800; font-size:18px;">${done}/${total}</div>
-            <div style="font-size:11.5px; color:var(--ink-muted);">完了</div>
-          </div>
-        </div>
-        <div class="progress" style="margin-top:12px;"><div style="width:${pct}%"></div></div>
-        <table class="plain" style="margin-top:14px;"><tbody>${rows}</tbody></table>
-      </div>`;
+      <tr>
+        <td>${it.name || it.id}</td>
+        <td style="color:var(--ink-muted); font-size:12px;">${it.mentor || ''}</td>
+        <td>${doneDate ? `<span class="tag status-good">${doneDate}</span>` : `<span class="tag status-neutral">未実施</span>`}</td>
+        <td style="text-align:right;"><button class="btn passport-toggle-btn" type="button" data-idx="${idx}">${doneDate ? '取り消す' : '終了'}</button></td>
+      </tr>`;
   }).join('');
+
+  document.getElementById('passportDetailBody').innerHTML = `
+    <div class="card" style="padding:20px; margin-bottom:16px;">
+      <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
+        <div>
+          <div class="section-title" style="font-size:16px; margin:0;">${p.name}</div>
+          <div class="section-sub" style="margin:2px 0 0;">${[p.team, p.overallMentor ? '全体メンター：'+p.overallMentor : '', p.personalMentor ? 'パーソナルメンター：'+p.personalMentor : ''].filter(Boolean).join(' ／ ')}</div>
+        </div>
+        <div style="text-align:right;">
+          <div style="font-weight:800; font-size:18px;">${done}/${total}</div>
+          <div style="font-size:11.5px; color:var(--ink-muted);">完了</div>
+        </div>
+      </div>
+      <div class="progress" style="margin-top:12px;"><div style="width:${pct}%"></div></div>
+    </div>
+    <div class="card" style="padding:20px;">
+      <div class="section-sub" style="margin-bottom:10px;">各項目の担当メンターが1to1・MSP受講などを終えたら「終了」ボタンを押してください。押し間違えた場合は「取り消す」でいつでも戻せます。</div>
+      <table class="plain"><tbody id="passportItemRows">${rows}</tbody></table>
+    </div>
+  `;
+
+  // 項目名やメンター名に引用符などが含まれていても壊れないよう、
+  // ボタンのクリック処理はHTML文字列に埋め込まず、ここで直接バインドします。
+  document.querySelectorAll('#passportItemRows .passport-toggle-btn').forEach(btn => {
+    const idx = Number(btn.dataset.idx);
+    const it = passportItems[idx];
+    if(!it) return;
+    const alreadyDone = !!(p.items && p.items[it.id]);
+    btn.onclick = () => togglePassportItem(p.name, it.id, !alreadyDone);
+  });
+}
+
+function closePassportDetail(){
+  document.getElementById('passportDetailWrap').style.display = 'none';
+  document.getElementById('passportListWrap').style.display = '';
+}
+
+function togglePassportItem(name, itemId, done){
+  const p = passportProgress.find(x => x.name === name);
+  if(!p) return;
+
+  fetch(MEMBER_API_URL, {
+    method: 'POST',
+    mode: 'no-cors', // GAS側のCORS制約を避けるため。応答内容は読み取れませんが送信自体は行われます。
+    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+    body: JSON.stringify({ action: 'passportUpdate', name: name, itemId: itemId, done: done }),
+  }).then(() => {
+    if(!p.items) p.items = {};
+    if(done){ p.items[itemId] = todayStr_(); }
+    else{ delete p.items[itemId]; }
+    toast(done ? '完了にしました' : '未実施に戻しました');
+    openPassportDetail(name);
+    renderPassport();
+    updateNavCounts();
+  }).catch(() => {
+    toast('送信に失敗しました。通信環境をご確認のうえ、もう一度お試しください。');
+  });
 }
 
 /* =========================================================
@@ -1093,17 +1126,29 @@ function renderMembers(){
 /* =========================================================
    RENDER: ROTATION
    ========================================================= */
+function rotationPersonCellHTML_(name, topic){
+  if(!name) return `<span style="color:var(--ink-soft);">—</span>`;
+  const m = members.find(x => x.name === name);
+  return `
+    <div class="row-person">${m ? avatarHTML(m.id, 34) : ''}<span>${name}</span></div>
+    ${topic ? `<div style="font-size:11.5px; color:var(--ink-muted); margin-top:2px;">${topic}</div>` : ''}
+  `;
+}
+
 function renderRotation(){
   const body = document.getElementById('rotationBody');
-  body.innerHTML = rotation.map(r => {
-    const m = memberById(r.memberId);
-    if(!m) return '';
-    return `<tr>
-      <td>${r.week}</td>
-      <td><div class="row-person">${avatarHTML(m.id,34)}<span>${m.name}</span></div></td>
-      <td><span class="cat-chip">${m.category}</span></td>
-      <td>${statusTag(r.status)}</td>
-      <td style="color:var(--ink-muted)">${r.topic}</td>
+  if(!speakerRotation.length){
+    body.innerHTML = `<tr><td colspan="4" class="note">まだ登録されていません。「スピーカーローテーション」シートに行を追加してください。</td></tr>`;
+    return;
+  }
+  const today = new Date();
+  body.innerHTML = speakerRotation.map(r => {
+    const isThisWeek = isSameWeek_(r.week, today);
+    return `<tr style="${isThisWeek ? 'background:var(--surface-alt);' : ''}">
+      <td>${r.week}${isThisWeek ? ' <span class="tag status-good">今週</span>' : ''}</td>
+      <td>${rotationPersonCellHTML_(r.presenter1, r.topic1)}</td>
+      <td>${rotationPersonCellHTML_(r.presenter2, r.topic2)}</td>
+      <td>${r.eighty || '<span style="color:var(--ink-soft);">—</span>'}</td>
     </tr>`;
   }).join('');
 }
@@ -1131,55 +1176,6 @@ function renderDocs(){
       <button class="btn" disabled title="デモのため無効化しています">資料を開く</button>
     </div>
   `).join('');
-}
-
-/* =========================================================
-   RENDER: ATTENDANCE
-   ========================================================= */
-function renderAttendanceOptions(){
-  const weekSel = document.getElementById('attWeek');
-  weekSel.innerHTML = rotation.map(r => `<option value="${r.week}">${r.week}</option>`).join('');
-  const memSel = document.getElementById('attMember');
-  memSel.innerHTML = members.map(m => `<option value="${m.id}">${m.name}</option>`).join('');
-}
-
-function renderAttendance(){
-  const week = document.getElementById('attWeek').value || rotation[0].week;
-  const rows = attendance.filter(a => a.week === week);
-  const counts = { '出席':0, '欠席':0, '60分ルール':0, '遅刻':0 };
-  rows.forEach(a => counts[a.status] = (counts[a.status]||0) + 1);
-  const noAnswer = members.length - rows.length;
-  document.getElementById('attSummarySub').textContent = `${week} ／ 回答 ${rows.length}/${members.length}名`;
-  document.getElementById('attSummaryBars').innerHTML = attBarsHTML(counts, noAnswer);
-
-  const body = document.getElementById('attTableBody');
-  body.innerHTML = [...attendance].reverse().map(a => {
-    const m = memberById(a.memberId);
-    if(!m) return '';
-    return `<tr>
-      <td>${a.week}</td>
-      <td><div class="row-person">${avatarHTML(m.id,28)}<span>${m.name}</span></div></td>
-      <td>${statusTag(a.status)}</td>
-      <td style="color:var(--ink-muted)">${a.comment || '—'}</td>
-    </tr>`;
-  }).join('');
-}
-
-function submitAttendance(e){
-  e.preventDefault();
-  const week = document.getElementById('attWeek').value;
-  const memberId = parseInt(document.getElementById('attMember').value, 10);
-  const status = document.querySelector('input[name="attStatus"]:checked').value;
-  const comment = document.getElementById('attComment').value.trim();
-
-  attendance = attendance.filter(a => !(a.week===week && a.memberId===memberId));
-  attendance.push({ week, memberId, status, comment });
-
-  document.getElementById('attComment').value = '';
-  renderAttendance();
-  renderHome();
-  toast('回答を送信しました（デモ内メモリに保存）');
-  return false;
 }
 
 /* =========================================================
@@ -1290,10 +1286,6 @@ function updateMember(id, field, value){
   renderRotation();
   renderTeams();
   renderHome();
-  renderAttendanceOptions();
-  const focused = document.activeElement;
-  const wasSelect = document.getElementById('attWeek');
-  if(focused !== wasSelect) renderAttendance();
   toast('マスターデータを更新しました → 各ページに反映されました');
 }
 
@@ -1336,7 +1328,7 @@ function applyMembersFromAPI(payload){
     joinDate: m.joinDate || '',
   }));
 
-  weeklyRotation = Array.isArray(payload.rotation) ? payload.rotation.map(r => ({
+  speakerRotation = Array.isArray(payload.rotation) ? payload.rotation.map(r => ({
     week: r.week || '',
     presenter1: r.presenter1 || '',
     topic1: r.topic1 || '',
@@ -1355,8 +1347,8 @@ function applyMembersFromAPI(payload){
   })) : [];
 
   scheduleEvents = Array.isArray(payload.schedule) ? payload.schedule.map(s => ({
+    id: s.id || '',
     title: s.title || '',
-    host: s.host || '',
     date: s.date || '',
     time: s.time || '',
     place: s.place || '',
@@ -1382,6 +1374,7 @@ function applyMembersFromAPI(payload){
   })) : [];
 
   attendanceRecords = Array.isArray(payload.attendance) ? payload.attendance.map(a => ({
+    eventId: a.eventId || '',
     eventDate: a.eventDate || '',
     eventTitle: a.eventTitle || '',
     name: a.name || '',
@@ -1457,13 +1450,12 @@ function renderAll(){
   renderMembers();
   renderRotation();
   renderDocs();
-  renderAttendanceOptions();
-  renderAttendance();
   renderSchedule();
   renderPassport();
   renderTasks();
   renderTeams();
   renderMaster();
+  updateNavCounts();
 }
 
 buildNav();
