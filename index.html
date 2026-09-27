@@ -14,7 +14,7 @@
   比べて、違っていた場合だけ静かに1回だけ読み込み直します（URLは変えません。LINEや
   Messenger等で共有した際に、リンクが長くなったり、表示が崩れたりしないようにするためです）。
 -->
-<script>window.__BNI_BUILD_ID__ = '2026-09-28-01';</script>
+<script>window.__BNI_BUILD_ID__ = '2026-09-28-03';</script>
 <script>
 (function(){
   try{
@@ -352,7 +352,7 @@
         </div>
 
         <div class="section-title">新メンバー紹介</div>
-        <div class="section-sub">入会から3ヶ月以内のメンバーです</div>
+        <div class="section-sub">パスポートプログラムに登録されている新メンバーです</div>
         <div class="grid cols-3" id="homeNewMembers" style="margin-bottom:22px;"></div>
 
         <div class="grid cols-2" style="align-items:start; margin-bottom:22px;">
@@ -384,6 +384,84 @@
         <div id="scheduleDetailWrap" style="display:none;">
           <button class="btn" onclick="closeScheduleDetail()">← 一覧に戻る</button>
           <div id="scheduleDetailBody" style="margin-top:16px;"></div>
+        </div>
+      </section>
+
+      <!-- ---------- VISITOR REGISTER ---------- -->
+      <section class="view" id="view-visitorForm">
+        <div class="section-title">ビジター登録</div>
+        <div class="section-sub">例会にお越しいただくビジターさまの情報を登録してください。メールアドレス・電話番号（ビジターご本人・招待者とも）以外の項目は、ホームの「今週のビジター情報」にそのまま表示されます。</div>
+        <div class="card" style="padding:20px; max-width:640px;">
+          <form id="visitorRegisterForm">
+            <div class="form-grid">
+              <div class="field full">
+                <label for="vfWeek">参加する定例会日選択</label>
+                <input type="date" id="vfWeek" required>
+              </div>
+              <div class="field">
+                <label for="vfName">お名前</label>
+                <input type="text" id="vfName" required>
+              </div>
+              <div class="field">
+                <label for="vfKana">フリガナ</label>
+                <input type="text" id="vfKana">
+              </div>
+              <div class="field">
+                <label for="vfCompany">社名・屋号</label>
+                <input type="text" id="vfCompany">
+              </div>
+              <div class="field">
+                <label for="vfCompanyKana">社名・屋号（フリガナ）</label>
+                <input type="text" id="vfCompanyKana">
+              </div>
+              <div class="field">
+                <label for="vfEmail">メールアドレス</label>
+                <input type="email" id="vfEmail">
+              </div>
+              <div class="field">
+                <label for="vfSpecialty">お仕事の専門分野</label>
+                <input type="text" id="vfSpecialty">
+              </div>
+              <div class="field full">
+                <label for="vfWantCategory">繋がりたい業種等</label>
+                <input type="text" id="vfWantCategory">
+              </div>
+              <div class="field">
+                <label for="vfPhone">連絡先（電話番号）</label>
+                <input type="tel" id="vfPhone">
+              </div>
+              <div class="field">
+                <label for="vfInviter">招待者</label>
+                <input type="text" id="vfInviter">
+              </div>
+              <div class="field">
+                <label for="vfInviterEmail">招待者メールアドレス</label>
+                <input type="email" id="vfInviterEmail">
+              </div>
+              <div class="field full">
+                <label for="vfIntention">現時点でのビジターさまのご意向は？</label>
+                <select id="vfIntention">
+                  <option value="">選択してください</option>
+                  <option value="1.入会前提での定例会の参加">1. 入会前提での定例会の参加</option>
+                  <option value="2.興味はあるけどまだ不安がある">2. 興味はあるけどまだ不安がある</option>
+                  <option value="3.メインプレゼンの応援等">3. メインプレゼンの応援等</option>
+                </select>
+              </div>
+              <div class="field full">
+                <label for="vfWantToMeet">メンバーで繋げたい人</label>
+                <input type="text" id="vfWantToMeet">
+              </div>
+              <div class="field full">
+                <label for="vfRelationship">関係性</label>
+                <input type="text" id="vfRelationship">
+              </div>
+              <div class="field full">
+                <label for="vfNote">その他連絡事項（有の場合）</label>
+                <textarea id="vfNote"></textarea>
+              </div>
+            </div>
+            <button class="btn primary" type="submit" style="margin-top:14px;">登録する</button>
+          </form>
         </div>
       </section>
 
@@ -631,6 +709,7 @@ const VIEWS = [
   { id:'rotation',   label:'スピーカーローテーション', count:()=>speakerRotation.length },
   { id:'docs',       label:'資料室',             count:()=>documents.length },
   { id:'schedule',   label:'スケジュール',       count:()=>scheduleEvents.length },
+  { id:'visitorForm', label:'ビジター登録' },
   { id:'passport',   label:'パスポートプログラム', count:()=>passportProgress.length },
   { id:'teams',      label:'チーム紹介',         count:()=>Object.keys(TEAM_META).length },
   // 「タスク・進捗」「マスターデータ」は、後日メンバーを限定した専用ページに
@@ -725,16 +804,29 @@ function thisWeekVisitors(){
   if(key === null) return [];
   return visitors.filter(v => { const d = parseYmd_(v.week); return d && d.getTime() === key; });
 }
-function newMemberList(){
-  const now = new Date(); now.setHours(0,0,0,0);
-  const cutoff = new Date(now); cutoff.setMonth(cutoff.getMonth() - 3);
-  return members
-    .filter(m => {
-      if(!m.joinDate) return false;
-      const d = new Date(m.joinDate + 'T00:00:00');
-      return !isNaN(d) && d >= cutoff && d <= now;
-    })
-    .sort((a,b) => b.joinDate.localeCompare(a.joinDate));
+// ホームの「今週のビジター情報」用カード。メールアドレス・電話番号（ビジターご本人・
+// 招待者とも）以外は、登録された内容をすべてここに表示します。
+function visitorCardHTML_(v){
+  const companyLine = [v.company, v.companyKana ? `（${v.companyKana}）` : ''].join('');
+  const line = (label, value) => value ? `<div style="font-size:11.5px; color:var(--ink-soft); margin-top:3px;">${label}：${value}</div>` : '';
+  return `
+    <div style="margin-bottom:14px; padding-bottom:14px; border-bottom:1px solid var(--border);">
+      <div style="font-weight:700; font-size:13.5px;">${v.name}${v.kana ? `（${v.kana}）` : ''}</div>
+      <div style="font-size:12px; color:var(--ink-muted); margin-top:2px;">${[companyLine, v.category, v.specialty].filter(Boolean).join(' ／ ')}</div>
+      ${line('繋がりたい業種等', v.wantCategory)}
+      ${line('招待者', v.referrer)}
+      ${line('現時点でのご意向', v.intention)}
+      ${line('メンバーで繋げたい人', v.wantToMeet)}
+      ${line('関係性', v.relationship)}
+      ${line('その他連絡事項', v.note)}
+    </div>`;
+}
+// ホームの「新メンバー紹介」用：パスポートプログラム（パスポート進捗シート）に
+// 登録されている新メンバーを、初回定例会参加日が新しい順に並べます。
+function passportNewMemberList(){
+  return passportProgress
+    .slice()
+    .sort((a,b) => (b.joinDate||'').localeCompare(a.joinDate||''));
 }
 function upcomingScheduleList(limit){
   const today = new Date(); today.setHours(0,0,0,0);
@@ -765,19 +857,20 @@ function renderHome(){
     return;
   }
 
-  // ---- 新メンバー紹介 ----
+  // ---- 新メンバー紹介（パスポート進捗シートより） ----
   const newMembersGrid = document.getElementById('homeNewMembers');
-  const nm = newMemberList();
-  newMembersGrid.innerHTML = nm.length ? nm.map(m => `
+  const nm = passportNewMemberList();
+  newMembersGrid.innerHTML = nm.length ? nm.map(p => {
+    const m = memberByName_(p.name);
+    return `
     <div class="card" style="padding:16px; display:flex; gap:12px; align-items:center;">
-      ${avatarHTML(m.id, 56)}
+      ${m ? avatarHTML(m.id, 56) : `<div class="avatar" style="width:56px;height:56px;font-size:18px;background:var(--surface-alt);color:var(--ink-muted);">${p.name.slice(0,2)}</div>`}
       <div style="min-width:0;">
-        <div style="font-weight:700; font-size:14.5px;">${m.name}</div>
-        <div style="font-size:12px; color:var(--ink-muted); margin:2px 0 6px; overflow-wrap:anywhere;">${m.company}</div>
-        <span class="cat-chip">${m.category}</span>
+        <div style="font-weight:700; font-size:14.5px;">${p.name}</div>
+        <div style="font-size:12px; color:var(--ink-muted); margin-top:2px;">${p.joinDate ? '初回定例会参加日：'+p.joinDate : '初回定例会参加日：未登録'}</div>
       </div>
-    </div>
-  `).join('') : `<div class="note">直近3ヶ月以内に入会したメンバーはいません。</div>`;
+    </div>`;
+  }).join('') : `<div class="note">パスポートプログラムに登録されている新メンバーはいません。</div>`;
 
   // ---- 今週のメインプレゼン（2名）＋80秒プレゼン ----
   const rot = thisWeekRotation();
@@ -802,15 +895,10 @@ function renderHome(){
   }
 
   // ---- 今週のビジター情報 ----
+  // メールアドレス・電話番号（ビジターご本人・招待者とも）以外は、すべてここに表示します。
   const tv = thisWeekVisitors();
   document.getElementById('homeVisitorsSub').textContent = tv.length ? `${tv.length}名` : '';
-  document.getElementById('homeVisitors').innerHTML = tv.length ? tv.map(v => `
-    <div style="margin-bottom:10px; padding-bottom:10px; border-bottom:1px solid var(--border);">
-      <div style="font-weight:700; font-size:13.5px;">${v.name}</div>
-      <div style="font-size:12px; color:var(--ink-muted);">${[v.company, v.category, v.specialty].filter(Boolean).join(' ／ ')}</div>
-      ${v.referrer ? `<div style="font-size:11.5px; color:var(--ink-soft); margin-top:2px;">紹介者：${v.referrer}</div>` : ''}
-    </div>
-  `).join('') : `<div class="note">今週のビジター登録はまだありません。</div>`;
+  document.getElementById('homeVisitors').innerHTML = tv.length ? tv.map(v => visitorCardHTML_(v)).join('') : `<div class="note">今週のビジター登録はまだありません。</div>`;
 
   // ---- 直近のスケジュール（5件） ----
   const upcoming = upcomingScheduleList(5);
@@ -970,6 +1058,75 @@ function submitEventAttendance(event, eventId){
   }).catch(() => {
     toast('送信に失敗しました。通信環境をご確認のうえ、もう一度お試しください。');
     if(btn){ btn.disabled = false; btn.textContent = '回答を送信'; }
+  });
+
+  return false;
+}
+
+/* =========================================================
+   VISITOR REGISTER（ビジター登録フォーム）
+   ---------------------------------------------------------
+   メールアドレス・電話番号（ビジターご本人・招待者とも）以外の項目は、
+   ホームの「今週のビジター情報」にそのまま表示されます。
+   ========================================================= */
+function submitVisitorRegister(event){
+  event.preventDefault();
+  const week = document.getElementById('vfWeek').value;
+  const name = document.getElementById('vfName').value.trim();
+  if(!week || !name){ toast('参加する定例会日とお名前は必須です'); return false; }
+
+  const payload = {
+    action:        'visitorRegister',
+    week:          week,
+    name:          name,
+    kana:          document.getElementById('vfKana').value.trim(),
+    company:       document.getElementById('vfCompany').value.trim(),
+    companyKana:   document.getElementById('vfCompanyKana').value.trim(),
+    email:         document.getElementById('vfEmail').value.trim(),
+    specialty:     document.getElementById('vfSpecialty').value.trim(),
+    wantCategory:  document.getElementById('vfWantCategory').value.trim(),
+    phone:         document.getElementById('vfPhone').value.trim(),
+    inviter:       document.getElementById('vfInviter').value.trim(),
+    inviterEmail:  document.getElementById('vfInviterEmail').value.trim(),
+    intention:     document.getElementById('vfIntention').value,
+    wantToMeet:    document.getElementById('vfWantToMeet').value.trim(),
+    relationship:  document.getElementById('vfRelationship').value.trim(),
+    note:          document.getElementById('vfNote').value.trim(),
+  };
+
+  const form = event.target;
+  const btn = form.querySelector('button[type="submit"]');
+  if(btn){ btn.disabled = true; btn.textContent = '送信中…'; }
+
+  fetch(MEMBER_API_URL, {
+    method: 'POST',
+    mode: 'no-cors', // GAS側のCORS制約を避けるため。応答内容は読み取れませんが送信自体は行われます。
+    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+    body: JSON.stringify(payload),
+  }).then(() => {
+    // 楽観的に、公開してよい項目（メールアドレス・電話番号以外）をその場でvisitors配列にも反映しておきます
+    visitors.push({
+      week: payload.week,
+      name: payload.name,
+      kana: payload.kana,
+      company: payload.company,
+      companyKana: payload.companyKana,
+      category: '',
+      specialty: payload.specialty,
+      wantCategory: payload.wantCategory,
+      referrer: payload.inviter,
+      intention: payload.intention,
+      wantToMeet: payload.wantToMeet,
+      relationship: payload.relationship,
+      note: payload.note,
+    });
+    renderHome();
+    toast('ビジター情報を登録しました');
+    form.reset();
+  }).catch(() => {
+    toast('送信に失敗しました。通信環境をご確認のうえ、もう一度お試しください。');
+  }).finally(() => {
+    if(btn){ btn.disabled = false; btn.textContent = '登録する'; }
   });
 
   return false;
@@ -1386,10 +1543,17 @@ function applyMembersFromAPI(payload){
   visitors = Array.isArray(payload.visitors) ? payload.visitors.map(v => ({
     week: v.week || '',
     name: v.name || '',
+    kana: v.kana || '',
     company: v.company || '',
+    companyKana: v.companyKana || '',
     category: v.category || '',
     specialty: v.specialty || '',
+    wantCategory: v.wantCategory || '',
     referrer: v.referrer || '',
+    intention: v.intention || '',
+    wantToMeet: v.wantToMeet || '',
+    relationship: v.relationship || '',
+    note: v.note || '',
   })) : [];
 
   scheduleEvents = Array.isArray(payload.schedule) ? payload.schedule.map(s => ({
@@ -1538,6 +1702,7 @@ buildNav();
 renderAll();
 showView('home');
 loadMembersFromAPI();
+document.getElementById('visitorRegisterForm').onsubmit = submitVisitorRegister;
 </script>
 </body>
 </html>
