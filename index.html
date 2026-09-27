@@ -564,6 +564,14 @@ const teamTasks = {
    HELPERS
    ========================================================= */
 function memberById(id){ return members.find(m => m.id === id); }
+// スピーカーローテーション等、他シートに手入力された氏名で会員マスターを引く際、
+// 前後の空白・全角/半角スペースの違いだけで一致しなくなるのを防ぐための緩い照合
+function normalizeName_(s){ return String(s||'').trim().replace(/[\s　]+/g, ''); }
+function memberByName_(name){
+  const key = normalizeName_(name);
+  if(!key) return null;
+  return members.find(x => normalizeName_(x.name) === key) || null;
+}
 function initials(name){ return name.split(' ')[0] || name.slice(0,2); }
 function genderColors(gender){ return GENDER_COLORS[gender] || GENDER_COLORS.default; }
 function avatarHTML(id, size){
@@ -749,7 +757,7 @@ function renderHome(){
   } else {
     const presenterRow = (name, topic) => {
       if(!name) return '';
-      const m = members.find(x => x.name === name);
+      const m = memberByName_(name);
       return `
         <div style="display:flex; gap:12px; align-items:center; margin-bottom:12px;">
           ${m ? avatarHTML(m.id, 44) : `<div class="avatar" style="width:44px;height:44px;background:var(--surface-alt);color:var(--ink-muted);">${name.slice(0,2)}</div>`}
@@ -1128,9 +1136,13 @@ function renderMembers(){
    ========================================================= */
 function rotationPersonCellHTML_(name, topic){
   if(!name) return `<span style="color:var(--ink-soft);">—</span>`;
-  const m = members.find(x => x.name === name);
+  const m = memberByName_(name);
+  // 会員マスターに同じ氏名が見つからない場合も、空白ではなく仮アイコンを出す
+  // （原因の多くは、スピーカーローテーション側の氏名の表記ゆれ・誤字・空白）
+  const avatar = m ? avatarHTML(m.id, 34)
+    : `<div class="avatar" style="width:34px;height:34px;font-size:12px;background:var(--surface-alt);color:var(--ink-muted);" title="会員マスターに同名の登録が見つかりません">${name.slice(0,2)}</div>`;
   return `
-    <div class="row-person">${m ? avatarHTML(m.id, 34) : ''}<span>${name}</span></div>
+    <div class="row-person">${avatar}<span>${name}</span></div>
     ${topic ? `<div style="font-size:11.5px; color:var(--ink-muted); margin-top:2px;">${topic}</div>` : ''}
   `;
 }
