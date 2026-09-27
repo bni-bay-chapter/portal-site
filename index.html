@@ -671,28 +671,43 @@ function navClick(id){
 }
 
 /* =========================================================
-   日付ヘルパー（「今週」の判定・新メンバー判定・並び替えに使用）
+   日付ヘルパー（「今週（＝次回の例会）」の判定・新メンバー判定・並び替えに使用）
+   ---------------------------------------------------------
+   「今週」はカレンダー上の月〜日ではなく、「直近でまだ開催されていない
+   （＝これから来る）例会日、無ければ一番最近開催された例会日」として判定します。
+   例会は毎週同じ曜日とは限らず、また週の途中（日〜火など）で見ると
+   カレンダー週での一致判定は「今週分がまだ入っていない」ように見えて
+   分かりにくいため、この方式にしています。
    ========================================================= */
-function mondayOf_(d){
-  const dt = new Date(d);
-  const day = (dt.getDay() + 6) % 7; // 月=0 … 日=6
-  dt.setDate(dt.getDate() - day);
-  dt.setHours(0,0,0,0);
-  return dt;
+function parseYmd_(s){
+  if(!s) return null;
+  const d = new Date(String(s) + 'T00:00:00');
+  return isNaN(d) ? null : d;
 }
-function isSameWeek_(dateStr, ref){
-  if(!dateStr) return false;
-  const d = new Date(dateStr + 'T00:00:00');
-  if(isNaN(d)) return false;
-  return mondayOf_(d).getTime() === mondayOf_(ref).getTime();
+function nearestActiveDate_(dateStrings){
+  const today = new Date(); today.setHours(0,0,0,0);
+  const dated = dateStrings.map(parseYmd_).filter(Boolean);
+  if(!dated.length) return null;
+  const upcoming = dated.filter(d => d.getTime() >= today.getTime()).sort((a,b)=>a-b);
+  if(upcoming.length) return upcoming[0].getTime();
+  const past = dated.filter(d => d.getTime() < today.getTime()).sort((a,b)=>b-a);
+  return past.length ? past[0].getTime() : null;
+}
+function currentRotationWeekKey_(){
+  return nearestActiveDate_(speakerRotation.map(r => r.week));
 }
 function thisWeekRotation(){
-  const today = new Date();
-  return speakerRotation.find(r => isSameWeek_(r.week, today)) || null;
+  const key = currentRotationWeekKey_();
+  if(key === null) return null;
+  return speakerRotation.find(r => { const d = parseYmd_(r.week); return d && d.getTime() === key; }) || null;
+}
+function currentVisitorWeekKey_(){
+  return nearestActiveDate_(visitors.map(v => v.week));
 }
 function thisWeekVisitors(){
-  const today = new Date();
-  return visitors.filter(v => isSameWeek_(v.week, today));
+  const key = currentVisitorWeekKey_();
+  if(key === null) return [];
+  return visitors.filter(v => { const d = parseYmd_(v.week); return d && d.getTime() === key; });
 }
 function newMemberList(){
   const now = new Date(); now.setHours(0,0,0,0);
@@ -1153,9 +1168,10 @@ function renderRotation(){
     body.innerHTML = `<tr><td colspan="4" class="note">まだ登録されていません。「スピーカーローテーション」シートに行を追加してください。</td></tr>`;
     return;
   }
-  const today = new Date();
+  const currentKey = currentRotationWeekKey_();
   body.innerHTML = speakerRotation.map(r => {
-    const isThisWeek = isSameWeek_(r.week, today);
+    const d = parseYmd_(r.week);
+    const isThisWeek = currentKey !== null && d && d.getTime() === currentKey;
     return `<tr style="${isThisWeek ? 'background:var(--surface-alt);' : ''}">
       <td>${r.week}${isThisWeek ? ' <span class="tag status-good">今週</span>' : ''}</td>
       <td>${rotationPersonCellHTML_(r.presenter1, r.topic1)}</td>
