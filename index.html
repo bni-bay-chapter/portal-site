@@ -14,7 +14,7 @@
   比べて、違っていた場合だけ静かに1回だけ読み込み直します（URLは変えません。LINEや
   Messenger等で共有した際に、リンクが長くなったり、表示が崩れたりしないようにするためです）。
 -->
-<script>window.__BNI_BUILD_ID__ = '2026-09-28-06';</script>
+<script>window.__BNI_BUILD_ID__ = '2026-09-28-07';</script>
 <script>
 (function(){
   try{
@@ -611,6 +611,46 @@ function resolveTeamKey_(raw){
 }
 const TEAM_AUTO_PALETTE = ['#8a6dd1', '#d1748a', '#4fa3d9', '#d9a24f', '#5fb98c', '#b06fd1', '#e08a5c', '#5cb3b0'];
 
+// 「委員会」列に複数のチームがまとめて書かれている場合（例：「メンバーシップ委員会、VCC」）に、
+// 両方のチームカードへ表示できるよう、読点・カンマ・スラッシュ・中黒で区切って分割します。
+function splitTeamValues_(raw){
+  return String(raw || '')
+    .split(/[、,，\/・\n]+/)
+    .map(s => s.trim())
+    .filter(Boolean);
+}
+
+// 「所属チーム」（役職・肩書き）の文字列に「リーダー」「委員長」「会長」が含まれる場合、
+// そのチーム内でのリーダー的な立場とみなします。
+function isLeaderRole_(role){
+  return /リーダー|委員長|会長/.test(String(role || ''));
+}
+
+// 会員マスターの「委員会」を、複数チーム所属にも対応してグループ化します。
+// renderTeams()（表示）と、左メニューの件数表示の両方から、同じ結果を参照します。
+function computeTeamGroups_(){
+  const groups = {};
+  const order = [];
+  members.forEach(m => {
+    const raws = splitTeamValues_(m.team);
+    const seenKeys = new Set();
+    raws.forEach(raw => {
+      const key = resolveTeamKey_(raw);
+      if(!key || seenKeys.has(key)) return;
+      seenKeys.add(key);
+      if(!groups[key]){
+        const known = TEAM_META[key];
+        groups[key] = known
+          ? { label: known.label, color: known.color, desc: known.desc, cadence: known.cadence, roster: [] }
+          : { label: key, color: '', desc: '', cadence: '', roster: [] };
+        order.push(key);
+      }
+      groups[key].roster.push(m);
+    });
+  });
+  return { groups, order };
+}
+
 // マスター（API）からの読み込みが終わるまでは true になりません。
 // これが false の間は、ホーム画面・メンバー一覧に下のサンプル人物名を
 // 表示せず、「読み込み中」の表示にします（実データ取得後 or タイムアウト後に true へ）。
@@ -741,7 +781,7 @@ const VIEWS = [
   { id:'schedule',   label:'スケジュール',       count:()=>scheduleEvents.length },
   { id:'visitorForm', label:'ビジター登録' },
   { id:'passport',   label:'パスポートプログラム', count:()=>passportProgress.length },
-  { id:'teams',      label:'チーム紹介',         count:()=>Object.keys(TEAM_META).length },
+  { id:'teams',      label:'チーム紹介',         count:()=>computeTeamGroups_().order.length },
   // 「タスク・進捗」「マスターデータ」は、後日メンバーを限定した専用ページに
   // する予定のため、いったんメニューから非表示にしています
   // （中身のコード自体は残っているので、後で簡単に戻せます）。
@@ -1480,22 +1520,9 @@ function renderTeams(){
   const grid = document.getElementById('teamGrid');
   grid.innerHTML = '';
 
-  // 会員マスターの「所属チーム」を見て、実際にメンバーがいるチームだけをカード表示します。
+  // 会員マスターの「委員会」を見て、実際にメンバーがいるチームだけをカード表示します。
   // 未設定（空欄・"none"）のメンバーはチーム紹介には出しません。
-  const groups = {};
-  const order = [];
-  members.forEach(m => {
-    const key = resolveTeamKey_(m.team);
-    if(!key) return;
-    if(!groups[key]){
-      const known = TEAM_META[key];
-      groups[key] = known
-        ? { label: known.label, color: known.color, desc: known.desc, cadence: known.cadence, roster: [] }
-        : { label: key, color: '', desc: '', cadence: '', roster: [] };
-      order.push(key);
-    }
-    groups[key].roster.push(m);
-  });
+  const { groups, order } = computeTeamGroups_();
 
   if(!order.length){
     grid.innerHTML = `<div class="note">${membersReady ? '会員マスターの「所属チーム」が設定されているメンバーはまだいません。' : '読み込み中です…'}</div>`;
@@ -1506,6 +1533,8 @@ function renderTeams(){
   order.forEach(key => {
     const g = groups[key];
     if(!g.color) g.color = TEAM_AUTO_PALETTE[autoIdx++ % TEAM_AUTO_PALETTE.length];
+    // リーダー（役職に「リーダー」「委員長」「会長」を含む人）を先頭に表示します。
+    const roster = g.roster.slice().sort((a, b) => (isLeaderRole_(b.role) ? 1 : 0) - (isLeaderRole_(a.role) ? 1 : 0));
     const div = document.createElement('div');
     div.className = 'card team-card';
     div.style.setProperty('--c', g.color);
@@ -1518,7 +1547,7 @@ function renderTeams(){
       </div>
       ${g.desc ? `<p class="desc">${g.desc}</p>` : ''}
       <div class="chip-row">
-        ${g.roster.map(m => `<span class="member-chip">${m.name}（${m.category}）</span>`).join('')}
+        ${roster.map(m => `<span class="member-chip">${m.name}${isLeaderRole_(m.role) ? `<span class="tag status-good" style="margin-left:5px; padding:1px 6px; font-size:9.5px; vertical-align:middle;">リーダー</span>` : ''}（${m.category}）</span>`).join('')}
       </div>
     `;
     grid.appendChild(div);
