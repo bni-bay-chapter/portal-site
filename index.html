@@ -4,10 +4,28 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <!-- サイトのコード（このindex.html自体）が更新された後、閲覧者のブラウザに
-     古い内容がキャッシュされて残るのをできるだけ防ぐための指定です。 -->
+     古い内容がキャッシュされて残るのをできるだけ防ぐための指定です。
+     ただしmetaタグの指定だけではブラウザ・GitHub Pages側のキャッシュを
+     完全には防げないため、下のスクリプトで「毎回、必ずキャッシュを
+     経由しない新しいURLとして読み込み直す」対策もあわせて行っています。 -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
+<script>
+(function(){
+  // URLに ?_v=... が付いていない通常のアクセス（ブックマーク・リンク・直接入力など）の場合、
+  // 末尾に毎回変わる値を付けて即座に読み込み直します。ブラウザやGitHub Pagesのキャッシュは
+  // URL単位で効くため、こうすることで「毎回、確実に最新のファイルを取得」できます。
+  // （一度 _v 付きのURLに移動した後は、そのページ内では再度リダイレクトしません）
+  try{
+    var u = new URL(location.href);
+    if(!u.searchParams.has('_v')){
+      u.searchParams.set('_v', Date.now().toString());
+      location.replace(u.toString());
+    }
+  }catch(e){ /* 万一失敗しても、通常表示を継続します */ }
+})();
+</script>
 <title>Bayチャプターポータルサイト</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
