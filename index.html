@@ -14,7 +14,7 @@
   比べて、違っていた場合だけ静かに1回だけ読み込み直します（URLは変えません。LINEや
   Messenger等で共有した際に、リンクが長くなったり、表示が崩れたりしないようにするためです）。
 -->
-<script>window.__BNI_BUILD_ID__ = '2026-09-28-08';</script>
+<script>window.__BNI_BUILD_ID__ = '2026-09-28-09';</script>
 <script>
 (function(){
   try{
@@ -620,6 +620,17 @@ function splitTeamValues_(raw){
     .filter(Boolean);
 }
 
+// 「委員会」列の1つの区切りから、チーム名と（あれば）そのチーム内での役職を取り出します。
+// 例："メンバーシップ委員会（リーダー）" → { name:'メンバーシップ委員会', role:'リーダー' }
+// 括弧が無い場合は role は null（その場合は「所属チーム」列の値をそのまま使います）。
+// 2つ以上の委員会に所属していて、片方だけリーダー／副リーダー等の場合は、
+// 違う方の委員会名の後ろにだけ（役職）を書き足せば、そちらだけ役職を上書きできます。
+function parseTeamSegment_(segment){
+  const m = String(segment || '').trim().match(/^(.*?)[（(]([^）)]+)[）)]\s*$/);
+  if(m) return { name: m[1].trim(), role: m[2].trim() };
+  return { name: String(segment || '').trim(), role: null };
+}
+
 // 「所属チーム」（役職・肩書き）の文字列から、リーダー／副リーダー的な立場かどうかを判定します。
 // 「副リーダー」「副委員長」「副会長」は、先に判定してリーダー判定から除外します
 // （「副リーダー」も文字列として「リーダー」を含んでしまうため）。
@@ -644,10 +655,10 @@ function computeTeamGroups_(){
   const groups = {};
   const order = [];
   members.forEach(m => {
-    const raws = splitTeamValues_(m.team);
+    const segments = splitTeamValues_(m.team).map(parseTeamSegment_);
     const seenKeys = new Set();
-    raws.forEach(raw => {
-      const key = resolveTeamKey_(raw);
+    segments.forEach(seg => {
+      const key = resolveTeamKey_(seg.name);
       if(!key || seenKeys.has(key)) return;
       seenKeys.add(key);
       if(!groups[key]){
@@ -657,7 +668,10 @@ function computeTeamGroups_(){
           : { label: key, color: '', desc: '', cadence: '', roster: [] };
         order.push(key);
       }
-      groups[key].roster.push(m);
+      // このチームでの役職：（役職）の指定があればそれを優先し、無ければ「所属チーム」列の値を使います。
+      // これにより、複数の委員会に所属していて片方だけリーダー等の場合も、正しく出し分けられます。
+      const entry = seg.role ? Object.assign({}, m, { role: seg.role }) : m;
+      groups[key].roster.push(entry);
     });
   });
   return { groups, order };
