@@ -14,7 +14,7 @@
   比べて、違っていた場合だけ静かに1回だけ読み込み直します（URLは変えません。LINEや
   Messenger等で共有した際に、リンクが長くなったり、表示が崩れたりしないようにするためです）。
 -->
-<script>window.__BNI_BUILD_ID__ = '2026-09-28-03';</script>
+<script>window.__BNI_BUILD_ID__ = '2026-09-28-05';</script>
 <script>
 (function(){
   try{
@@ -390,13 +390,19 @@
       <!-- ---------- VISITOR REGISTER ---------- -->
       <section class="view" id="view-visitorForm">
         <div class="section-title">ビジター登録</div>
-        <div class="section-sub">例会にお越しいただくビジターさまの情報を登録してください。メールアドレス・電話番号（ビジターご本人・招待者とも）以外の項目は、ホームの「今週のビジター情報」にそのまま表示されます。</div>
+        <div class="section-sub">例会にお越しいただくビジターさま・代理人さまの情報を登録してください。メールアドレス・電話番号（ご本人・招待者とも）以外の項目は、ホームの「今週のビジター情報」にそのまま表示されます（代理人としてのご登録は一覧の一番最後に表示されます）。</div>
         <div class="card" style="padding:20px; max-width:640px;">
           <form id="visitorRegisterForm">
             <div class="form-grid">
               <div class="field full">
                 <label for="vfWeek">参加する定例会日選択</label>
                 <input type="date" id="vfWeek" required>
+              </div>
+              <div class="field full">
+                <label style="display:flex; align-items:center; gap:8px; padding:10px 12px; background:#fff7e6; border:1px solid #f0c36d; border-radius:8px; cursor:pointer;">
+                  <input type="checkbox" id="vfIsProxy" style="width:16px; height:16px; flex:none;">
+                  <span style="font-size:13px;">メンバーの代理人としてのご登録です（欠席メンバーの代理でご参加の場合はチェックしてください）</span>
+                </label>
               </div>
               <div class="field">
                 <label for="vfName">お名前</label>
@@ -809,9 +815,12 @@ function thisWeekVisitors(){
 function visitorCardHTML_(v){
   const companyLine = [v.company, v.companyKana ? `（${v.companyKana}）` : ''].join('');
   const line = (label, value) => value ? `<div style="font-size:11.5px; color:var(--ink-soft); margin-top:3px;">${label}：${value}</div>` : '';
+  const badge = v.isProxy
+    ? `<span style="display:inline-block; padding:2px 8px; margin-left:6px; font-size:10.5px; font-weight:700; color:#8a5700; background:#fff1cc; border:1px solid #f0c36d; border-radius:10px; vertical-align:middle;">代理人様</span>`
+    : `<span style="display:inline-block; padding:2px 8px; margin-left:6px; font-size:10.5px; font-weight:700; color:#0a5c36; background:#e6f7ee; border:1px solid #8fd9b6; border-radius:10px; vertical-align:middle;">ビジター様</span>`;
   return `
     <div style="margin-bottom:14px; padding-bottom:14px; border-bottom:1px solid var(--border);">
-      <div style="font-weight:700; font-size:13.5px;">${v.name}${v.kana ? `（${v.kana}）` : ''}</div>
+      <div style="font-weight:700; font-size:13.5px;">${v.name}様${badge}${v.kana ? `（${v.kana}）` : ''}</div>
       <div style="font-size:12px; color:var(--ink-muted); margin-top:2px;">${[companyLine, v.category, v.specialty].filter(Boolean).join(' ／ ')}</div>
       ${line('繋がりたい業種等', v.wantCategory)}
       ${line('招待者', v.referrer)}
@@ -896,7 +905,8 @@ function renderHome(){
 
   // ---- 今週のビジター情報 ----
   // メールアドレス・電話番号（ビジターご本人・招待者とも）以外は、すべてここに表示します。
-  const tv = thisWeekVisitors();
+  // ビジターを先に、代理人を一番最後に表示します
+  const tv = thisWeekVisitors().slice().sort((a, b) => (a.isProxy ? 1 : 0) - (b.isProxy ? 1 : 0));
   document.getElementById('homeVisitorsSub').textContent = tv.length ? `${tv.length}名` : '';
   document.getElementById('homeVisitors').innerHTML = tv.length ? tv.map(v => visitorCardHTML_(v)).join('') : `<div class="note">今週のビジター登録はまだありません。</div>`;
 
@@ -1079,6 +1089,7 @@ function submitVisitorRegister(event){
     action:        'visitorRegister',
     week:          week,
     name:          name,
+    isProxy:       document.getElementById('vfIsProxy').checked,
     kana:          document.getElementById('vfKana').value.trim(),
     company:       document.getElementById('vfCompany').value.trim(),
     companyKana:   document.getElementById('vfCompanyKana').value.trim(),
@@ -1108,6 +1119,7 @@ function submitVisitorRegister(event){
     visitors.push({
       week: payload.week,
       name: payload.name,
+      isProxy: payload.isProxy,
       kana: payload.kana,
       company: payload.company,
       companyKana: payload.companyKana,
@@ -1543,6 +1555,7 @@ function applyMembersFromAPI(payload){
   visitors = Array.isArray(payload.visitors) ? payload.visitors.map(v => ({
     week: v.week || '',
     name: v.name || '',
+    isProxy: !!v.isProxy,
     kana: v.kana || '',
     company: v.company || '',
     companyKana: v.companyKana || '',
