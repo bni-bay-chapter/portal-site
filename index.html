@@ -14,7 +14,7 @@
   比べて、違っていた場合だけ静かに1回だけ読み込み直します（URLは変えません。LINEや
   Messenger等で共有した際に、リンクが長くなったり、表示が崩れたりしないようにするためです）。
 -->
-<script>window.__BNI_BUILD_ID__ = '2026-09-28-13';</script>
+<script>window.__BNI_BUILD_ID__ = '2026-09-28-14';</script>
 <script>
 (function(){
   try{
@@ -612,11 +612,16 @@ const TEAM_META = {
 // 会員マスターの「所属チーム」列は表記ゆれがあり得るため、代表的な別表記を吸収します。
 // ここに載っていない文字列は、そのままチーム名としてカードを自動生成します。
 const TEAM_ALIASES = {
-  LT:         ['LT', 'エルティー', 'リーダーシップチーム', 'リーダーシップ'],
-  membership: ['membership', 'メンバーシップ', 'メンバーシップ委員会', 'MC'],
-  vcc:        ['vcc', 'VCC', '来訪者委員会', 'ビジター委員会'],
-  event:      ['event', 'イベント', 'イベント委員会', 'イベント・広報委員会', 'イベント広報委員会', '広報委員会', '広報', 'PR'],
+  LT:         ['LT', 'エルティー', 'リーダーシップチーム', 'リーダーシップ', 'LEADERSHIP TEAM', 'リーダーシップ チーム'],
+  membership: ['membership', 'メンバーシップ', 'メンバーシップ委員会', 'MC', 'MEMBERSHIP COMMITTEE'],
+  vcc:        ['vcc', 'VCC', '来訪者委員会', 'ビジター委員会', 'VISITOR COMMITTEE'],
+  event:      ['event', 'イベント', 'イベント委員会', 'イベント・広報委員会', 'イベント広報委員会', '広報委員会', '広報', 'PR', 'EVENT COMMITTEE'],
 };
+// チーム紹介の並び順：LT→メンバーシップ→VCC→イベントの順を必ず優先します
+// （BNIの慣例として、リーダーシップチームは常に一番先頭に表示されるべきのため）。
+// これ以外の（会員マスターで自由に作られた）チームは、末尾にまとめ、
+// その中では表示番号が一番若いメンバーがいる順に並びます。
+const TEAM_ORDER_PRIORITY = { LT: 0, membership: 1, vcc: 2, event: 3 };
 function normalizeTeamText_(s){
   return String(s || '').replace(/[\s　]/g, '').toLowerCase();
 }
@@ -697,9 +702,13 @@ function computeTeamGroups_(){
     });
   });
 
-  // チームカードの並び順は、各チームに所属するメンバーの最小の「表示番号」順にします
-  // （会員マスターの行の並びや、複数委員会所属時にどちらが先に見つかるかに左右されないようにするため）。
+  // チームカードの並び順：まずLT→メンバーシップ→VCC→イベントの固定順を優先し、
+  // それ以外の（自由に作られた）チームは、表示番号が一番若いメンバーがいる順に、
+  // 固定順のチームより後ろにまとめて並べます。
   order.sort((a, b) => {
+    const pa = TEAM_ORDER_PRIORITY.hasOwnProperty(a) ? TEAM_ORDER_PRIORITY[a] : 100;
+    const pb = TEAM_ORDER_PRIORITY.hasOwnProperty(b) ? TEAM_ORDER_PRIORITY[b] : 100;
+    if(pa !== pb) return pa - pb;
     const minId = g => Math.min(...g.roster.map(m => { const n = Number(m.id); return isNaN(n) ? Infinity : n; }));
     return minId(groups[a]) - minId(groups[b]);
   });
