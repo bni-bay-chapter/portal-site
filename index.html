@@ -14,7 +14,7 @@
   比べて、違っていた場合だけ静かに1回だけ読み込み直します（URLは変えません。LINEや
   Messenger等で共有した際に、リンクが長くなったり、表示が崩れたりしないようにするためです）。
 -->
-<script>window.__BNI_BUILD_ID__ = '2026-09-28-09';</script>
+<script>window.__BNI_BUILD_ID__ = '2026-09-28-12';</script>
 <script>
 (function(){
   try{
@@ -230,6 +230,24 @@
   .cat-chip{ font-size:12px; padding:3px 9px; border-radius:999px; border:1px solid var(--border); color:var(--ink-muted); background:var(--surface-alt); }
   .member-hp-link{ display:inline-block; margin-top:8px; font-size:12.5px; color:var(--accent, #2563eb); text-decoration:none; }
   .member-hp-link:hover{ text-decoration:underline; }
+  .member-category-group{ margin-bottom:30px; }
+  .member-category-band{ display:flex; align-items:center; justify-content:space-between; gap:14px; background:var(--accent); color:var(--accent-ink); border-radius:var(--radius-m); padding:12px 18px; margin-bottom:16px; }
+  .member-category-eyebrow{ font-size:10px; font-weight:700; letter-spacing:.1em; opacity:.85; margin-bottom:5px; }
+  .member-category-pill{ display:inline-block; background:var(--surface); color:var(--ink); border-radius:999px; padding:7px 18px; font-size:14.5px; font-weight:800; }
+  .member-category-count{ font-size:12px; font-weight:700; opacity:.9; white-space:nowrap; }
+
+  /* ---------- member card v2（業種カテゴリー別の名刺風カード） ---------- */
+  .member-card-v2{ display:flex; flex-direction:column; overflow:hidden; }
+  .mc-top{ display:flex; gap:12px; align-items:flex-start; padding:14px 14px 10px; }
+  .mc-catch{ flex:1; min-width:0; font-weight:700; font-size:13.5px; line-height:1.5; color:var(--ink); overflow-wrap:anywhere; }
+  .mc-photo{ flex:0 0 auto; }
+  .mc-namebar{ display:flex; align-items:baseline; justify-content:space-between; gap:8px; flex-wrap:wrap; background:var(--surface-alt); padding:9px 14px; border-top:1px solid var(--border); border-bottom:1px solid var(--border); }
+  .mc-name-ja{ font-weight:800; font-size:15.5px; color:var(--ink); }
+  .mc-name-en{ font-size:11.5px; color:var(--ink-muted); white-space:nowrap; }
+  .mc-company{ font-size:11.5px; color:var(--ink-muted); padding:8px 14px 0; overflow-wrap:anywhere; }
+  .mc-bio{ font-size:12.5px; color:var(--ink-soft); line-height:1.65; padding:8px 14px 0; margin:0; overflow-wrap:anywhere; }
+  .mc-meta{ display:flex; flex-direction:column; gap:6px; padding:10px 14px 14px; }
+  .mc-hp{ padding:0 14px 14px; }
   .team-chip{ font-size:11px; padding:2px 8px; border-radius:999px; color:#fff; font-weight:700; }
   .toolbar{ display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin-bottom:16px; }
   .toolbar input[type="text"], .toolbar select{ padding:8px 11px; border-radius:var(--radius-s); border:1px solid var(--border); background:var(--surface); color:var(--ink); font-size:13px; }
@@ -296,6 +314,18 @@
   table.master td{ padding:8px 8px; }
 
   .footer-note{ margin-top:36px; padding-top:16px; border-top:1px solid var(--border); font-size:11.5px; color:var(--ink-soft); }
+
+  /* ---------- 印刷／PDF出力用（メンバー一覧の「PDF・印刷用に出力」ボタンから使用） ----------
+     ブラウザの印刷ダイアログで「PDFに保存」を選ぶと、そのままPDF化できます。 */
+  @media print{
+    .mobile-topbar, .sidebar, .topbar, .toolbar, .footer-note, .toast, #onboardCallout{ display:none !important; }
+    body, .app, .main, .content{ background:#fff !important; }
+    .content{ padding:0 !important; max-width:none !important; }
+    .card{ box-shadow:none !important; border:1px solid #ccc !important; }
+    .member-card, .team-card{ break-inside:avoid; }
+    .member-category-group{ break-inside:avoid-page; }
+    .grid.cols-3{ grid-template-columns:repeat(2,1fr) !important; }
+  }
 </style>
 </head>
 <body>
@@ -491,17 +521,9 @@
           <span id="dataSourceBadge" class="tag status-neutral" style="margin-left:6px;">サンプルデータを表示中</span>
         </div>
         <div class="toolbar">
-          <input type="text" id="memberSearch" placeholder="氏名・会社名・業種で検索" oninput="renderMembers()">
-          <select id="teamFilter" onchange="renderMembers()">
-            <option value="">すべてのチーム</option>
-            <option value="LT">リーダーシップチーム</option>
-            <option value="membership">メンバーシップ委員会</option>
-            <option value="vcc">VCC（来訪者委員会）</option>
-            <option value="event">イベント・広報委員会</option>
-            <option value="none">一般会員（委員会所属なし）</option>
-          </select>
+          <button class="btn primary" onclick="window.print()">🖨️ PDF・印刷用に出力</button>
         </div>
-        <div class="grid cols-3" id="memberGrid"></div>
+        <div id="memberGrid"></div>
       </section>
 
       <!-- ---------- ROTATION ---------- -->
@@ -1373,40 +1395,86 @@ function togglePassportItem(name, itemId, done){
 /* =========================================================
    RENDER: MEMBERS
    ========================================================= */
+// 自己紹介など、改行を含む可能性がある自由記述のテキストを安全に表示するためのエスケープです。
+function escapeHtmlKeepBreaks_(s){
+  return String(s || '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/\r\n|\r|\n/g, '<br>');
+}
+
+// 業種カテゴリー別ページ（添付の名刺風フォーマット）に合わせたメンバーカードです。
+// キャッチコピー・協業カテゴリー・クライアントは、会員マスターに同名の列を追加すると表示されます
+// （列が無い・空欄の場合は、その行だけ自然に非表示になります）。
+function memberCardEl_(m){
+  const div = document.createElement('div');
+  div.className = 'card member-card-v2';
+  div.innerHTML = `
+    <div class="mc-top">
+      <div class="mc-catch">${escapeHtmlKeepBreaks_(m.catchphrase)}</div>
+      <div class="mc-photo">${avatarHTML(m.id, 64)}</div>
+    </div>
+    <div class="mc-namebar">
+      <span class="mc-name-ja">${m.name}</span>
+      ${m.kana ? `<span class="mc-name-en">${m.kana}</span>` : ''}
+    </div>
+    ${m.company ? `<div class="mc-company">${m.company}</div>` : ''}
+    ${m.bio ? `<p class="mc-bio">${escapeHtmlKeepBreaks_(m.bio)}</p>` : ''}
+    <div class="mc-meta">
+      ${m.category ? `<div class="badge-row"><span class="badge-label">ビジネスカテゴリー</span><span class="cat-chip">${m.category}</span></div>` : ''}
+      ${m.collabCategory ? `<div class="badge-row"><span class="badge-label">協業カテゴリー</span><span class="cat-chip">${m.collabCategory}</span></div>` : ''}
+      ${m.clientProfile ? `<div class="badge-row"><span class="badge-label">クライアント</span><span class="cat-chip">${m.clientProfile}</span></div>` : ''}
+    </div>
+    ${m.website ? `<div class="mc-hp"><a class="member-hp-link" href="${m.website}" target="_blank" rel="noopener noreferrer">🌐 ホームページを見る</a></div>` : ''}`;
+  return div;
+}
+
 function renderMembers(){
-  const q = (document.getElementById('memberSearch').value || '').trim().toLowerCase();
-  const teamF = document.getElementById('teamFilter').value;
   const grid = document.getElementById('memberGrid');
   grid.innerHTML = '';
   if(!membersReady){
     grid.innerHTML = `<div class="note">メンバー情報を読み込み中です…</div>`;
     return;
   }
-  members
-    .filter(m => !teamF || m.team === teamF)
-    .filter(m => !q || [m.name, m.company, m.category].join(' ').toLowerCase().includes(q))
-    .forEach(m => {
-      const div = document.createElement('div');
-      div.className = 'card member-card';
-      div.innerHTML = `
-        <div class="avatar-col">
-          ${avatarHTML(m.id, 72)}
-          ${m.id ? `<span class="member-no-big">No.${m.id}</span>` : ''}
-        </div>
-        <div class="info">
-          <p class="name">${m.name}</p>
-          <p class="company">${m.company}</p>
-          <div class="badges">
-            ${m.category ? `<div class="badge-row"><span class="badge-label">ビジネスカテゴリー：</span><span class="cat-chip">${m.category}</span></div>` : ''}
-            ${m.role ? `<div class="badge-row"><span class="cat-chip">${m.role}</span></div>` : ''}
-          </div>
-          ${m.website ? `<a class="member-hp-link" href="${m.website}" target="_blank" rel="noopener noreferrer" onclick="event.stopPropagation()">🌐 ホームページを見る</a>` : ''}
-        </div>`;
-      grid.appendChild(div);
-    });
-  if(!grid.children.length){
-    grid.innerHTML = `<div class="note">該当するメンバーが見つかりませんでした。</div>`;
+
+  if(!members.length){
+    grid.innerHTML = `<div class="note">メンバーが登録されていません。</div>`;
+    return;
   }
+
+  // 「カテゴリー大分類」（会員マスターで指定した大枠）ごとに大きくグループ化して表示します。
+  // 未設定の方は「その他」としてまとめ、一番最後に表示します。
+  const groups = {};
+  const order = [];
+  members.forEach(m => {
+    const key = (m.categoryGroup || '').trim() || 'その他';
+    if(!groups[key]){ groups[key] = []; order.push(key); }
+    groups[key].push(m);
+  });
+  order.sort((a, b) => {
+    if(a === 'その他') return 1;
+    if(b === 'その他') return -1;
+    return a.localeCompare(b, 'ja');
+  });
+
+  order.forEach(cat => {
+    const section = document.createElement('div');
+    section.className = 'member-category-group';
+    section.innerHTML = `
+      <div class="member-category-band">
+        <div>
+          <div class="member-category-eyebrow">CATEGORY</div>
+          <div class="member-category-pill">${cat}</div>
+        </div>
+        <div class="member-category-count">${groups[cat].length}名</div>
+      </div>`;
+    const catGrid = document.createElement('div');
+    catGrid.className = 'grid cols-3';
+    groups[cat].forEach(m => catGrid.appendChild(memberCardEl_(m)));
+    section.appendChild(catGrid);
+    grid.appendChild(section);
+  });
 }
 
 /* =========================================================
@@ -1649,6 +1717,7 @@ function applyMembersFromAPI(payload){
     name: m.name,
     kana: m.kana || '',
     category: m.category || '',
+    categoryGroup: m.categoryGroup || '',
     company: m.company || '',
     role: m.role || '',
     team: m.team || 'none',
@@ -1656,6 +1725,10 @@ function applyMembersFromAPI(payload){
     photoPosition: m.photoPosition || '',
     website: m.website || '',
     gender: m.gender || '',
+    bio: m.bio || '',
+    catchphrase: m.catchphrase || '',
+    collabCategory: m.collabCategory || '',
+    clientProfile: m.clientProfile || '',
     joinDate: m.joinDate || '',
   }));
 
