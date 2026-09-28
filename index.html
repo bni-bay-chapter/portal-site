@@ -14,7 +14,7 @@
   比べて、違っていた場合だけ静かに1回だけ読み込み直します（URLは変えません。LINEや
   Messenger等で共有した際に、リンクが長くなったり、表示が崩れたりしないようにするためです）。
 -->
-<script>window.__BNI_BUILD_ID__ = '2026-09-28-15';</script>
+<script>window.__BNI_BUILD_ID__ = '2026-09-28-16';</script>
 <script>
 (function(){
   try{
@@ -315,11 +315,21 @@
 
   .footer-note{ margin-top:36px; padding-top:16px; border-top:1px solid var(--border); font-size:11.5px; color:var(--ink-soft); }
 
-  /* ---------- 印刷／PDF出力用（メンバー一覧の「PDF・印刷用に出力」ボタンから使用） ----------
-     ブラウザの印刷ダイアログで「PDFに保存」を選ぶと、そのままPDF化できます。 */
+  /* ---------- 印刷／PDF出力用（メンバー一覧の「印刷する」「PDFで保存」ボタンから使用） ----------
+     どちらのボタンもブラウザの印刷ダイアログを開きます。「PDFで保存」は、そこで送信先を
+     「PDFに保存」に切り替えていただく想定です（ブラウザだけで動く静的サイトのため、
+     ダイアログを介さずに直接PDFファイルを生成することはできません）。 */
   @media print{
     .mobile-topbar, .sidebar, .topbar, .toolbar, .footer-note, .toast, #onboardCallout{ display:none !important; }
-    body, .app, .main, .content{ background:#fff !important; }
+    /* 写真（アバターの背景画像）や色付きの帯を印刷時にも表示させます。
+       これが無いと、ブラウザの「背景のグラフィック」設定によっては写真や色が印刷されません。 */
+    *{ -webkit-print-color-adjust:exact !important; print-color-adjust:exact !important; color-adjust:exact !important; }
+    /* ダークモード環境で見ていても、印刷・PDFでは常に読みやすい黒文字・白背景にします。 */
+    :root{
+      --bg:#ffffff !important; --surface:#ffffff !important; --surface-alt:#f2f2f2 !important;
+      --border:#cccccc !important; --ink:#000000 !important; --ink-muted:#222222 !important; --ink-soft:#444444 !important;
+    }
+    body, .app, .main, .content{ background:#fff !important; color:#000 !important; }
     .content{ padding:0 !important; max-width:none !important; }
     .card{ box-shadow:none !important; border:1px solid #ccc !important; }
     .member-card, .team-card{ break-inside:avoid; }
@@ -521,7 +531,8 @@
           <span id="dataSourceBadge" class="tag status-neutral" style="margin-left:6px;">サンプルデータを表示中</span>
         </div>
         <div class="toolbar">
-          <button class="btn primary" onclick="window.print()">🖨️ PDF・印刷用に出力</button>
+          <button class="btn" onclick="window.print()">🖨️ 印刷する</button>
+          <button class="btn primary" onclick="exportMembersPdf_()">📄 PDFで保存</button>
         </div>
         <div id="memberGrid"></div>
       </section>
@@ -1412,6 +1423,13 @@ function togglePassportItem(name, itemId, done){
 /* =========================================================
    RENDER: MEMBERS
    ========================================================= */
+// 「PDFで保存」ボタン用。静的サイトのためブラウザの印刷ダイアログを経由しますが、
+// 「印刷する」ボタンと区別できるよう、先にひとこと案内を出してから開きます。
+function exportMembersPdf_(){
+  toast('印刷画面が開きます。送信先（プリンタ）の一覧から「PDFに保存」を選んでください');
+  setTimeout(() => window.print(), 600);
+}
+
 // 自己紹介など、改行を含む可能性がある自由記述のテキストを安全に表示するためのエスケープです。
 function escapeHtmlKeepBreaks_(s){
   return String(s || '')
