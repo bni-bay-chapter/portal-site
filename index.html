@@ -14,7 +14,7 @@
   比べて、違っていた場合だけ静かに1回だけ読み込み直します（URLは変えません。LINEや
   Messenger等で共有した際に、リンクが長くなったり、表示が崩れたりしないようにするためです）。
 -->
-<script>window.__BNI_BUILD_ID__ = '2026-09-28-14';</script>
+<script>window.__BNI_BUILD_ID__ = '2026-09-28-15';</script>
 <script>
 (function(){
   try{
@@ -1469,7 +1469,12 @@ function renderMembers(){
     if(!groups[key]){ groups[key] = []; order.push(key); }
     groups[key].push(m);
   });
+  // リーダーシップチームは、業種のあいうえお順とは関係なく、必ず一番先頭に表示します。
   order.sort((a, b) => {
+    const aIsLT = resolveTeamKey_(a) === 'LT';
+    const bIsLT = resolveTeamKey_(b) === 'LT';
+    if(aIsLT && !bIsLT) return -1;
+    if(bIsLT && !aIsLT) return 1;
     if(a === 'その他') return 1;
     if(b === 'その他') return -1;
     return a.localeCompare(b, 'ja');
