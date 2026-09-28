@@ -14,7 +14,7 @@
   比べて、違っていた場合だけ静かに1回だけ読み込み直します（URLは変えません。LINEや
   Messenger等で共有した際に、リンクが長くなったり、表示が崩れたりしないようにするためです）。
 -->
-<script>window.__BNI_BUILD_ID__ = '2026-09-28-16';</script>
+<script>window.__BNI_BUILD_ID__ = '2026-09-28-17';</script>
 <script>
 (function(){
   try{
@@ -235,15 +235,16 @@
   .member-category-eyebrow{ font-size:10px; font-weight:700; letter-spacing:.1em; opacity:.85; margin-bottom:5px; }
   .member-category-pill{ display:inline-block; background:var(--surface); color:var(--ink); border-radius:999px; padding:7px 18px; font-size:14.5px; font-weight:800; }
   .member-category-count{ font-size:12px; font-weight:700; opacity:.9; white-space:nowrap; }
+  .print-member-table{ display:none; } /* 画面では非表示。印刷・PDF出力時だけ使う専用レイアウトです */
 
   /* ---------- member card v2（業種カテゴリー別の名刺風カード） ---------- */
   .member-card-v2{ display:flex; flex-direction:column; overflow:hidden; }
-  .mc-top{ display:flex; gap:12px; align-items:flex-start; padding:14px 14px 10px; }
-  .mc-catch{ flex:1; min-width:0; font-weight:700; font-size:13.5px; line-height:1.5; color:var(--ink); overflow-wrap:anywhere; }
+  .mc-catch{ padding:12px 14px 0; font-weight:700; font-size:13px; line-height:1.5; color:var(--ink); overflow-wrap:anywhere; }
+  .mc-top{ display:flex; align-items:center; justify-content:space-between; gap:12px; padding:10px 14px; border-bottom:1px solid var(--border); }
+  .mc-nameblock{ min-width:0; }
+  .mc-name-ja{ font-weight:800; font-size:16px; color:var(--ink); overflow-wrap:anywhere; }
+  .mc-name-en{ font-size:11.5px; color:var(--ink-muted); margin-top:3px; white-space:nowrap; }
   .mc-photo{ flex:0 0 auto; }
-  .mc-namebar{ display:flex; align-items:baseline; justify-content:space-between; gap:8px; flex-wrap:wrap; background:var(--surface-alt); padding:9px 14px; border-top:1px solid var(--border); border-bottom:1px solid var(--border); }
-  .mc-name-ja{ font-weight:800; font-size:15.5px; color:var(--ink); }
-  .mc-name-en{ font-size:11.5px; color:var(--ink-muted); white-space:nowrap; }
   .mc-company{ font-size:11.5px; color:var(--ink-muted); padding:8px 14px 0; overflow-wrap:anywhere; }
   .mc-bio{ font-size:12.5px; color:var(--ink-soft); line-height:1.65; padding:8px 14px 0; margin:0; overflow-wrap:anywhere; }
   .mc-meta{ display:flex; flex-direction:column; gap:6px; padding:10px 14px 14px; }
@@ -332,9 +333,23 @@
     body, .app, .main, .content{ background:#fff !important; color:#000 !important; }
     .content{ padding:0 !important; max-width:none !important; }
     .card{ box-shadow:none !important; border:1px solid #ccc !important; }
-    .member-card, .team-card{ break-inside:avoid; }
-    .member-category-group{ break-inside:avoid-page; }
+    .member-card-v2, .team-card{ break-inside:avoid; }
     .grid.cols-3{ grid-template-columns:repeat(2,1fr) !important; }
+
+    /* メンバー一覧の印刷・PDF出力は、画面用のCSS Grid表示は隠し、代わりに<table>で組んだ
+       印刷専用のレイアウトを使います。<table>のthead（カテゴリー見出し）は、内容が複数ページに
+       またがったとき、ブラウザが各ページの先頭に自動で繰り返し表示してくれるため、
+       「カテゴリーが次ページに続くときも、小さく見出しが出る」状態を実現しています。 */
+    .member-category-group > .member-category-band{ display:none !important; }
+    .member-category-group > .grid.cols-3{ display:none !important; }
+    .print-member-table{ display:table !important; width:100% !important; border-collapse:collapse !important; table-layout:fixed !important; }
+    .print-member-table thead{ display:table-header-group; }
+    .print-member-table th{ padding:0 0 8px; text-align:left; font-weight:normal; border:none; }
+    .print-member-table td{ width:50%; padding:0 6px 12px; vertical-align:top; border:none; }
+    .print-member-table tr{ break-inside:avoid; page-break-inside:avoid; }
+    .print-member-table .member-category-band{ padding:7px 12px; }
+    .print-member-table .member-category-pill{ font-size:12.5px; padding:5px 14px; }
+    .print-member-table .member-category-eyebrow{ font-size:9px; margin-bottom:3px; }
   }
 </style>
 </head>
@@ -1442,27 +1457,26 @@ function escapeHtmlKeepBreaks_(s){
 // 業種カテゴリー別ページ（添付の名刺風フォーマット）に合わせたメンバーカードです。
 // キャッチコピー・協業カテゴリー・クライアントは、会員マスターに同名の列を追加すると表示されます
 // （列が無い・空欄の場合は、その行だけ自然に非表示になります）。
-function memberCardEl_(m){
-  const div = document.createElement('div');
-  div.className = 'card member-card-v2';
-  div.innerHTML = `
-    <div class="mc-top">
-      <div class="mc-catch">${escapeHtmlKeepBreaks_(m.catchphrase)}</div>
-      <div class="mc-photo">${avatarHTML(m.id, 64)}</div>
-    </div>
-    <div class="mc-namebar">
-      <span class="mc-name-ja">${m.name}</span>
-      ${m.kana ? `<span class="mc-name-en">${m.kana}</span>` : ''}
-    </div>
-    ${m.company ? `<div class="mc-company">${m.company}</div>` : ''}
-    ${m.bio ? `<p class="mc-bio">${escapeHtmlKeepBreaks_(m.bio)}</p>` : ''}
-    <div class="mc-meta">
-      ${m.category ? `<div class="badge-row"><span class="badge-label">ビジネスカテゴリー</span><span class="cat-chip">${m.category}</span></div>` : ''}
-      ${m.collabCategory ? `<div class="badge-row"><span class="badge-label">協業カテゴリー</span><span class="cat-chip">${m.collabCategory}</span></div>` : ''}
-      ${m.clientProfile ? `<div class="badge-row"><span class="badge-label">クライアント</span><span class="cat-chip">${m.clientProfile}</span></div>` : ''}
-    </div>
-    ${m.website ? `<div class="mc-hp"><a class="member-hp-link" href="${m.website}" target="_blank" rel="noopener noreferrer">🌐 ホームページを見る</a></div>` : ''}`;
-  return div;
+function memberCardHTML_(m){
+  return `
+    <div class="card member-card-v2">
+      ${m.catchphrase ? `<div class="mc-catch">${escapeHtmlKeepBreaks_(m.catchphrase)}</div>` : ''}
+      <div class="mc-top">
+        <div class="mc-nameblock">
+          <div class="mc-name-ja">${m.name}</div>
+          ${m.kana ? `<div class="mc-name-en">${m.kana}</div>` : ''}
+        </div>
+        <div class="mc-photo">${avatarHTML(m.id, 64)}</div>
+      </div>
+      ${m.company ? `<div class="mc-company">${m.company}</div>` : ''}
+      ${m.bio ? `<p class="mc-bio">${escapeHtmlKeepBreaks_(m.bio)}</p>` : ''}
+      <div class="mc-meta">
+        ${m.category ? `<div class="badge-row"><span class="badge-label">ビジネスカテゴリー</span><span class="cat-chip">${m.category}</span></div>` : ''}
+        ${m.collabCategory ? `<div class="badge-row"><span class="badge-label">協業カテゴリー</span><span class="cat-chip">${m.collabCategory}</span></div>` : ''}
+        ${m.clientProfile ? `<div class="badge-row"><span class="badge-label">クライアント</span><span class="cat-chip">${m.clientProfile}</span></div>` : ''}
+      </div>
+      ${m.website ? `<div class="mc-hp"><a class="member-hp-link" href="${m.website}" target="_blank" rel="noopener noreferrer">🌐 ホームページを見る</a></div>` : ''}
+    </div>`;
 }
 
 function renderMembers(){
@@ -1499,20 +1513,40 @@ function renderMembers(){
   });
 
   order.forEach(cat => {
-    const section = document.createElement('div');
-    section.className = 'member-category-group';
-    section.innerHTML = `
+    const roster = groups[cat];
+    const bandHTML = `
       <div class="member-category-band">
         <div>
           <div class="member-category-eyebrow">CATEGORY</div>
           <div class="member-category-pill">${cat}</div>
         </div>
-        <div class="member-category-count">${groups[cat].length}名</div>
+        <div class="member-category-count">${roster.length}名</div>
       </div>`;
-    const catGrid = document.createElement('div');
-    catGrid.className = 'grid cols-3';
-    groups[cat].forEach(m => catGrid.appendChild(memberCardEl_(m)));
-    section.appendChild(catGrid);
+
+    const section = document.createElement('div');
+    section.className = 'member-category-group';
+    section.innerHTML = bandHTML;
+
+    // 画面表示用（CSS Gridでカードを並べます）
+    const screenGrid = document.createElement('div');
+    screenGrid.className = 'grid cols-3';
+    screenGrid.innerHTML = roster.map(m => memberCardHTML_(m)).join('');
+    section.appendChild(screenGrid);
+
+    // 印刷・PDF出力専用（<table>のthead＝カテゴリー見出しを使います。カテゴリーの中身が
+    // 複数ページにまたがっても、ブラウザが各ページの先頭に見出しを自動で繰り返してくれるため、
+    // 続きのページにも小さくカテゴリー名が入り、カードが途中で切れることもなくなります）。
+    const rowsHTML = [];
+    for(let i = 0; i < roster.length; i += 2){
+      const c1 = memberCardHTML_(roster[i]);
+      const c2 = roster[i + 1] ? memberCardHTML_(roster[i + 1]) : '';
+      rowsHTML.push(`<tr><td>${c1}</td><td>${c2}</td></tr>`);
+    }
+    const printTable = document.createElement('table');
+    printTable.className = 'print-member-table';
+    printTable.innerHTML = `<thead><tr><th colspan="2">${bandHTML}</th></tr></thead><tbody>${rowsHTML.join('')}</tbody>`;
+    section.appendChild(printTable);
+
     grid.appendChild(section);
   });
 }
