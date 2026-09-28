@@ -14,7 +14,7 @@
   比べて、違っていた場合だけ静かに1回だけ読み込み直します（URLは変えません。LINEや
   Messenger等で共有した際に、リンクが長くなったり、表示が崩れたりしないようにするためです）。
 -->
-<script>window.__BNI_BUILD_ID__ = '2026-09-28-12';</script>
+<script>window.__BNI_BUILD_ID__ = '2026-09-28-13';</script>
 <script>
 (function(){
   try{
@@ -54,9 +54,9 @@
     --ink:#151B26;
     --ink-muted:#5B6472;
     --ink-soft:#8993A3;
-    --accent:#2F5D9B;
+    --accent:#8e0000;
     --accent-ink:#FFFFFF;
-    --accent-soft:#E3EAF4;
+    --accent-soft:#F6E3E3;
     --team-lt:#2F5D9B;
     --team-membership:#B0793C;
     --team-vcc:#1E8A99;
@@ -84,9 +84,9 @@
       --ink:#EDEFF3;
       --ink-muted:#9AA4B2;
       --ink-soft:#6C7684;
-      --accent:#6C93D1;
-      --accent-ink:#0E1420;
-      --accent-soft:#243247;
+      --accent:#D9776E;
+      --accent-ink:#241010;
+      --accent-soft:#3A2323;
       --team-lt:#6C93D1;
       --team-membership:#D3A06B;
       --team-vcc:#4FB9C7;
@@ -696,6 +696,14 @@ function computeTeamGroups_(){
       groups[key].roster.push(entry);
     });
   });
+
+  // チームカードの並び順は、各チームに所属するメンバーの最小の「表示番号」順にします
+  // （会員マスターの行の並びや、複数委員会所属時にどちらが先に見つかるかに左右されないようにするため）。
+  order.sort((a, b) => {
+    const minId = g => Math.min(...g.roster.map(m => { const n = Number(m.id); return isNaN(n) ? Infinity : n; }));
+    return minId(groups[a]) - minId(groups[b]);
+  });
+
   return { groups, order };
 }
 
