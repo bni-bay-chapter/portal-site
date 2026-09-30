@@ -14,7 +14,7 @@
   比べて、違っていた場合だけ静かに1回だけ読み込み直します（URLは変えません。LINEや
   Messenger等で共有した際に、リンクが長くなったり、表示が崩れたりしないようにするためです）。
 -->
-<script>window.__BNI_BUILD_ID__ = '2026-09-30-10';</script>
+<script>window.__BNI_BUILD_ID__ = '2026-09-30-11';</script>
 <script>
 (function(){
   try{
@@ -1593,6 +1593,13 @@ function renderMembers(){
     const key = (m.categoryGroup || '').trim() || 'その他';
     if(!groups[key]){ groups[key] = []; order.push(key); }
     groups[key].push(m);
+  });
+  // 各カテゴリーの中は、会員マスターの行の並びに関わらず「表示番号」の若い順に揃えます。
+  Object.keys(groups).forEach(key => {
+    groups[key].sort((a, b) => {
+      const na = Number(a.id), nb = Number(b.id);
+      return (isNaN(na) ? Infinity : na) - (isNaN(nb) ? Infinity : nb);
+    });
   });
   // リーダーシップチームは、業種のあいうえお順とは関係なく、必ず一番先頭に表示します。
   order.sort((a, b) => {
