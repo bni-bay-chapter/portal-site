@@ -14,7 +14,7 @@
   比べて、違っていた場合だけ静かに1回だけ読み込み直します（URLは変えません。LINEや
   Messenger等で共有した際に、リンクが長くなったり、表示が崩れたりしないようにするためです）。
 -->
-<script>window.__BNI_BUILD_ID__ = '2026-09-30-11';</script>
+<script>window.__BNI_BUILD_ID__ = '2026-09-30-12';</script>
 <script>
 (function(){
   try{
@@ -1601,7 +1601,10 @@ function renderMembers(){
       return (isNaN(na) ? Infinity : na) - (isNaN(nb) ? Infinity : nb);
     });
   });
-  // リーダーシップチームは、業種のあいうえお順とは関係なく、必ず一番先頭に表示します。
+  // カテゴリー（大分類）どうしの並び順も、業種のあいうえお順ではなく、
+  // 各カテゴリーの中で一番若い「表示番号」を持つ人がいる順に揃えます
+  // （会員マスターの表示番号は、カテゴリーをまたいで振られていないため）。
+  // ただし、リーダーシップチームだけは番号に関わらず必ず一番先頭に表示します。
   order.sort((a, b) => {
     const aIsLT = resolveTeamKey_(a) === 'LT';
     const bIsLT = resolveTeamKey_(b) === 'LT';
@@ -1609,7 +1612,10 @@ function renderMembers(){
     if(bIsLT && !aIsLT) return 1;
     if(a === 'その他') return 1;
     if(b === 'その他') return -1;
-    return a.localeCompare(b, 'ja');
+    // groups[key] は既に表示番号の若い順に並んでいるので、先頭の人の番号を比較すればOK
+    const na = Number(groups[a][0] && groups[a][0].id);
+    const nb = Number(groups[b][0] && groups[b][0].id);
+    return (isNaN(na) ? Infinity : na) - (isNaN(nb) ? Infinity : nb);
   });
 
   order.forEach(cat => {
