@@ -14,7 +14,7 @@
   比べて、違っていた場合だけ静かに1回だけ読み込み直します（URLは変えません。LINEや
   Messenger等で共有した際に、リンクが長くなったり、表示が崩れたりしないようにするためです）。
 -->
-<script>window.__BNI_BUILD_ID__ = '2026-09-30-02';</script>
+<script>window.__BNI_BUILD_ID__ = '2026-09-30-05';</script>
 <script>
 (function(){
   try{
@@ -394,7 +394,6 @@
       <section class="view active" id="view-home">
 
         <div class="section-title">お知らせ</div>
-        <div class="section-sub">Webチームからのお知らせです</div>
         <div id="homeAnnouncements" style="margin-bottom:22px;"></div>
 
         <div class="section-title">新メンバー紹介</div>
@@ -627,11 +626,32 @@
    実運用では Google スプレッドシート等に相当する部分
    ========================================================= */
 const TEAM_META = {
-  LT:         { label:'リーダーシップチーム',       color:'var(--team-lt)',         desc:'チャプター全体の運営方針を決定し、各委員会を統括します。会長・副会長・書記・財務・エデュケーターなどで構成されます。', cadence:'月1回 運営会議' },
-  membership: { label:'メンバーシップ委員会',       color:'var(--team-membership)', desc:'新規メンバーの募集・審査から、既存メンバーの満足度向上・退会防止までを担当します。', cadence:'隔週ミーティング' },
+  LT:         { label:'リーダーシップチーム',       color:'var(--team-lt)',         desc:'リーダーシップチームは会の運営を行う中心的存在。プレジデント、バイスプレジデント、書記兼会計の3役で構成される。', cadence:'月1回 運営会議' },
+  membership: { label:'メンバーシップ委員会',       color:'var(--team-membership)', desc:'メンバーシップ委員会は、BNI 規定の執行に関する最終的な権限を有します。メンバー規定、倫理規定、BNI コアバリューを遵守しない場合、メンバーを猶予処分とするか、メンバーの専門分野を開放することができます。', cadence:'隔週ミーティング' },
   vcc:        { label:'VCC（来訪者委員会）',        color:'var(--team-vcc)',        desc:'ビジター（見学者）の受け入れ準備とフォローアップを担当し、入会体験の質を高めます。', cadence:'毎週 例会前' },
   event:      { label:'イベント・広報委員会',       color:'var(--team-event)',      desc:'チャプター内イベントの企画運営と、対外的な広報・SNS発信を担当します。', cadence:'月1回 企画会議' },
 };
+
+// 上記4つ（LT/メンバーシップ/VCC/イベント）以外に、会員マスターの「委員会」列で
+// 自由に作られたチーム（動的チーム）にも紹介文を出したい場合は、ここに追記します。
+// キーは委員会名をそのまま（表記ゆれは normalizeTeamText_ で吸収して比較します）。
+const TEAM_DESC_OVERRIDES = {
+  'BDO実行委員会':             'BDO実行委員会は対面イベントにおける企画・準備・運営を行い、チャプターの活性化とメンバー増加につなげる役割を担う。',
+  'メンターコーディネーター':   'メンターコーディネーターは、メンバーがリファーラルマーケティングの効果を最大化するためのパスポートプログラムを監督します。',
+  'エデュケーションコーディネーター': 'エデュケーションコーディネーターは、メンバーのネットワーキングスキルを向上させるためのネットワークエデュケーションを担当します。',
+  'トレーニングコーディネーター': 'トレーニングコーディネーターは、各種トレーニングへの参加促進を通じて、メンバーのスキルアップとBNIへの理解を深める役割を担っています。',
+  'グローバルビジネスコーディネーター': 'グローバルビジネスコーディネーターは、海外のBNIメンバーとのつながりを広げ、国境を越えたリファーラルやビジネス機会の創出を促進する役割を担っています。',
+  'Web・Zoomマスター':          '定例会を支えるWeb・Zoomマスターは、チャプターのウェブサイトやソーシャルメディアページの管理と定例会の開催にあたりZoomの管理をしていただいています。',
+  'ビジターホスト':             'ビジターホストは、ビジター様を出迎え、ミーティング中はビジター様のサポートを行い、定例会後のフォローアップをさせていただきます。',
+  'BCP委員会':                  'BCP委員会は、災害時等におけるチャプターミーティングの開催や安否確認などに関する役割を担っています。',
+};
+function resolveTeamDesc_(rawKey){
+  const norm = normalizeTeamText_(rawKey);
+  for(const k in TEAM_DESC_OVERRIDES){
+    if(normalizeTeamText_(k) === norm) return TEAM_DESC_OVERRIDES[k];
+  }
+  return '';
+}
 
 // 会員マスターの「所属チーム」列は表記ゆれがあり得るため、代表的な別表記を吸収します。
 // ここに載っていない文字列は、そのままチーム名としてカードを自動生成します。
@@ -716,7 +736,7 @@ function computeTeamGroups_(){
         const known = TEAM_META[key];
         groups[key] = known
           ? { label: known.label, color: known.color, desc: known.desc, cadence: known.cadence, roster: [] }
-          : { label: key, color: '', desc: '', cadence: '', roster: [] };
+          : { label: key, color: '', desc: resolveTeamDesc_(key), cadence: '', roster: [] };
         order.push(key);
       }
       // このチームでの役職：（役職）の指定があればそれを優先し、無ければ「所属チーム」列の値を使います。
@@ -1092,7 +1112,7 @@ function renderHome(){
           ${m ? avatarHTML(m.id, 44) : `<div class="avatar" style="width:44px;height:44px;background:var(--surface-alt);color:var(--ink-muted);">${name.slice(0,2)}</div>`}
           <div style="min-width:0;">
             <div style="font-weight:700; font-size:14px;">${name}</div>
-            ${topic ? `<div style="font-size:12px; color:var(--ink-muted); overflow-wrap:anywhere;">テーマ：${topic}</div>` : ''}
+            ${topic ? `<div style="font-size:12px; color:var(--ink-muted); overflow-wrap:anywhere;">カテゴリー：${topic}</div>` : ''}
           </div>
         </div>`;
     };
