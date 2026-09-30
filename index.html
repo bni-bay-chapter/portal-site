@@ -14,7 +14,7 @@
   比べて、違っていた場合だけ静かに1回だけ読み込み直します（URLは変えません。LINEや
   Messenger等で共有した際に、リンクが長くなったり、表示が崩れたりしないようにするためです）。
 -->
-<script>window.__BNI_BUILD_ID__ = '2026-09-28-17';</script>
+<script>window.__BNI_BUILD_ID__ = '2026-09-30-01';</script>
 <script>
 (function(){
   try{
@@ -127,10 +127,10 @@
     display:flex; flex-direction:column;
     position:sticky; top:0; height:100vh; overflow-y:auto;
   }
-  .brand{ padding:22px 20px 16px; border-bottom:1px solid var(--border); }
-  .brand .eyebrow{ font-size:11px; letter-spacing:.12em; color:var(--ink-soft); font-weight:700; }
-  .brand h1{ font-size:19px; margin:4px 0 2px; line-height:1.35; font-weight:700; }
-  .brand .sub{ font-size:12px; color:var(--ink-muted); }
+  .brand{ padding:22px 20px 16px; background:var(--accent); color:var(--accent-ink); }
+  .brand .eyebrow{ font-size:11px; letter-spacing:.12em; color:inherit; opacity:.85; font-weight:700; }
+  .brand h1{ font-size:19px; margin:4px 0 2px; line-height:1.35; font-weight:700; color:inherit; }
+  .brand .sub{ font-size:12px; color:inherit; opacity:.85; }
   nav.tabs{ display:flex; flex-direction:column; padding:10px; gap:2px; flex:1; }
   nav.tabs button{
     text-align:left; border:none; background:transparent; color:var(--ink-muted);
@@ -240,10 +240,12 @@
   /* ---------- member card v2（業種カテゴリー別の名刺風カード） ---------- */
   .member-card-v2{ display:flex; flex-direction:column; overflow:hidden; }
   .mc-catch{ padding:12px 14px 0; font-weight:700; font-size:13px; line-height:1.5; color:var(--ink); overflow-wrap:anywhere; }
-  .mc-top{ display:flex; align-items:center; justify-content:space-between; gap:12px; padding:10px 14px; border-bottom:1px solid var(--border); }
+  .mc-top{ display:flex; align-items:center; justify-content:space-between; gap:12px; padding:10px 14px; background:var(--accent); color:var(--accent-ink); }
   .mc-nameblock{ min-width:0; }
-  .mc-name-ja{ font-weight:800; font-size:16px; color:var(--ink); overflow-wrap:anywhere; }
-  .mc-name-en{ font-size:11.5px; color:var(--ink-muted); margin-top:3px; white-space:nowrap; }
+  .mc-name-row{ display:flex; align-items:baseline; gap:7px; }
+  .mc-no{ flex:0 0 auto; display:inline-block; background:var(--surface); color:var(--accent); font-weight:800; font-size:11.5px; border-radius:999px; padding:1px 8px; }
+  .mc-name-ja{ font-weight:800; font-size:16px; color:inherit; overflow-wrap:anywhere; }
+  .mc-name-en{ font-size:11.5px; color:inherit; opacity:.85; margin-top:3px; white-space:nowrap; }
   .mc-photo{ flex:0 0 auto; }
   .mc-company{ font-size:11.5px; color:var(--ink-muted); padding:8px 14px 0; overflow-wrap:anywhere; }
   .mc-bio{ font-size:12.5px; color:var(--ink-soft); line-height:1.65; padding:8px 14px 0; margin:0; overflow-wrap:anywhere; }
@@ -321,7 +323,7 @@
      「PDFに保存」に切り替えていただく想定です（ブラウザだけで動く静的サイトのため、
      ダイアログを介さずに直接PDFファイルを生成することはできません）。 */
   @media print{
-    .mobile-topbar, .sidebar, .topbar, .toolbar, .footer-note, .toast, #onboardCallout{ display:none !important; }
+    .mobile-topbar, .sidebar, .topbar, .toolbar, .footer-note, .toast{ display:none !important; }
     /* 写真（アバターの背景画像）や色付きの帯を印刷時にも表示させます。
        これが無いと、ブラウザの「背景のグラフィック」設定によっては写真や色が印刷されません。 */
     *{ -webkit-print-color-adjust:exact !important; print-color-adjust:exact !important; color-adjust:exact !important; }
@@ -391,20 +393,9 @@
       <!-- ---------- HOME ---------- -->
       <section class="view active" id="view-home">
 
-        <div class="callout" id="onboardCallout">
-          <div class="badge">i</div>
-          <div>
-            <h3>はじめての方へ — このポータルの使い方</h3>
-            <p>チャプター運営に関わる情報をここに集約しています。まずは以下のタブをご覧ください。</p>
-            <ul>
-              <li><strong>メンバー一覧</strong> … 顔写真・業種・会社名を一覧で確認できます</li>
-              <li><strong>スケジュール</strong> … リージョン／チャプター主催イベントの一覧と出欠回答</li>
-              <li><strong>パスポートプログラム</strong> … 新メンバーの1to1メンタリング進捗</li>
-              <li><strong>資料室</strong> … 規約やテンプレートなど各種資料をまとめて掲載</li>
-            </ul>
-          </div>
-          <button class="close" onclick="document.getElementById('onboardCallout').style.display='none'">閉じる ×</button>
-        </div>
+        <div class="section-title">お知らせ</div>
+        <div class="section-sub">Webチームからのお知らせです</div>
+        <div id="homeAnnouncements" style="margin-bottom:22px;"></div>
 
         <div class="section-title">新メンバー紹介</div>
         <div class="section-sub">パスポートプログラムに登録されている新メンバーです</div>
@@ -787,6 +778,7 @@ let passportItems     = []; // パスポート担当者（項目定義）
 let passportProgress  = []; // パスポート進捗（新メンバーごと）
 let attendanceRecords = []; // 出欠管理（スケジュールへの回答一覧）
 let documents         = []; // 資料室（マスターの「資料室」シートで管理）
+let announcements     = []; // お知らせ（会員マスターと同じスプレッドシートの「お知らせ」タブで管理）
 
 // ↓ ここから下は、他タブ（タスク進捗など）のデモ表示用サンプルデータです
 const teamTasks = {
@@ -1011,8 +1003,46 @@ function passportDoneCount_(p){
 /* =========================================================
    RENDER: HOME
    ========================================================= */
+// お知らせの日付（'yyyy-MM-dd'）を「yyyy年M月d日」の表示に整えます。
+function formatAnnDate_(s){
+  const m = String(s || '').match(/^(\d{4})-(\d{2})-(\d{2})/);
+  if(!m) return s || '';
+  return `${Number(m[1])}年${Number(m[2])}月${Number(m[3])}日`;
+}
+
+// 会員マスターと同じスプレッドシートの「お知らせ」タブ（日付／タイトル／本文の3列）から
+// 表示します。新しい日付のものが先頭、直近5件のみ表示します
+// （増えすぎるとホーム画面が長くなるため。それより前のお知らせを消したい場合は、
+// スプレッドシート側でその行を削除するだけでOKです）。
+function renderAnnouncements(){
+  const wrap = document.getElementById('homeAnnouncements');
+  if(!wrap) return;
+  const list = announcements
+    .filter(a => a.title || a.body)
+    .slice()
+    .sort((a, b) => (a.date < b.date ? 1 : a.date > b.date ? -1 : 0))
+    .slice(0, 5);
+
+  if(!list.length){
+    wrap.innerHTML = `<div class="note">現在、お知らせはありません。</div>`;
+    return;
+  }
+
+  wrap.innerHTML = list.map(a => `
+    <div class="callout" style="margin-bottom:12px;">
+      <div class="badge">📢</div>
+      <div>
+        ${a.date ? `<div style="font-size:12px; color:var(--ink-muted); margin-bottom:2px;">${formatAnnDate_(a.date)}</div>` : ''}
+        ${a.title ? `<h3>${escapeHtmlKeepBreaks_(a.title)}</h3>` : ''}
+        ${a.body ? `<p>${escapeHtmlKeepBreaks_(a.body)}</p>` : ''}
+      </div>
+    </div>
+  `).join('');
+}
+
 function renderHome(){
   if(!membersReady){
+    document.getElementById('homeAnnouncements').innerHTML = `<div class="note">読み込み中です…</div>`;
     document.getElementById('homeNewMembers').innerHTML = `<div class="note">読み込み中です…</div>`;
     document.getElementById('homePresenters').innerHTML = `<div class="note">読み込み中です…</div>`;
     document.getElementById('homeVisitors').innerHTML = '';
@@ -1020,6 +1050,9 @@ function renderHome(){
     document.getElementById('homeSchedule').innerHTML = `<div class="note">読み込み中です…</div>`;
     return;
   }
+
+  // ---- お知らせ（会員マスターと同じスプレッドシートの「お知らせ」タブより） ----
+  renderAnnouncements();
 
   // ---- 新メンバー紹介（パスポート進捗シートより） ----
   const newMembersGrid = document.getElementById('homeNewMembers');
@@ -1463,7 +1496,10 @@ function memberCardHTML_(m){
       ${m.catchphrase ? `<div class="mc-catch">${escapeHtmlKeepBreaks_(m.catchphrase)}</div>` : ''}
       <div class="mc-top">
         <div class="mc-nameblock">
-          <div class="mc-name-ja">${m.name}</div>
+          <div class="mc-name-row">
+            ${m.id !== undefined && m.id !== '' ? `<span class="mc-no">No.${m.id}</span>` : ''}
+            <span class="mc-name-ja">${m.name}</span>
+          </div>
           ${m.kana ? `<div class="mc-name-en">${m.kana}</div>` : ''}
         </div>
         <div class="mc-photo">${avatarHTML(m.id, 64)}</div>
@@ -1873,6 +1909,12 @@ function applyMembersFromAPI(payload){
     type: d.type || '',
     url: d.url || '',
     updated: d.updated || '',
+  })) : [];
+
+  announcements = Array.isArray(payload.announcements) ? payload.announcements.map(a => ({
+    date: a.date || '',
+    title: a.title || '',
+    body: a.body || '',
   })) : [];
 
   updateLastUpdatedFoot(payload.updatedAt);
