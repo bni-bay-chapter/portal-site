@@ -14,7 +14,7 @@
   比べて、違っていた場合だけ静かに1回だけ読み込み直します（URLは変えません。LINEや
   Messenger等で共有した際に、リンクが長くなったり、表示が崩れたりしないようにするためです）。
 -->
-<script>window.__BNI_BUILD_ID__ = '2026-09-30-01';</script>
+<script>window.__BNI_BUILD_ID__ = '2026-09-30-02';</script>
 <script>
 (function(){
   try{
@@ -556,6 +556,13 @@
         <p class="note">※ 「スピーカーローテーション」シートに行を追加すると、ここと、該当週にはホーム画面にも自動反映されます。</p>
       </section>
 
+      <!-- ---------- EDUCATION ---------- -->
+      <section class="view" id="view-education">
+        <div class="section-title">エデュケーション</div>
+        <div class="section-sub">毎週のエデュケーションプレゼンの記録です。「エデュケーション」シートの「公開フラグ」にチェックが入っている行だけ表示されます。</div>
+        <div class="card" id="educationList"></div>
+      </section>
+
       <!-- ---------- DOCS ---------- -->
       <section class="view" id="view-docs">
         <div class="section-title">資料室</div>
@@ -779,6 +786,7 @@ let passportProgress  = []; // パスポート進捗（新メンバーごと）
 let attendanceRecords = []; // 出欠管理（スケジュールへの回答一覧）
 let documents         = []; // 資料室（マスターの「資料室」シートで管理）
 let announcements     = []; // お知らせ（会員マスターと同じスプレッドシートの「お知らせ」タブで管理）
+let education         = []; // エデュケーション（会員マスターと同じスプレッドシートの「エデュケーション」タブで管理）
 
 // ↓ ここから下は、他タブ（タスク進捗など）のデモ表示用サンプルデータです
 const teamTasks = {
@@ -860,6 +868,7 @@ const VIEWS = [
   { id:'home',       label:'ホーム' },
   { id:'members',    label:'メンバー一覧',       count:()=>members.length },
   { id:'rotation',   label:'スピーカーローテーション', count:()=>speakerRotation.length },
+  { id:'education',  label:'エデュケーション',    count:()=>education.length },
   { id:'docs',       label:'資料室',             count:()=>documents.length },
   { id:'schedule',   label:'スケジュール',       count:()=>scheduleEvents.length },
   { id:'visitorForm', label:'ビジター登録' },
@@ -1623,6 +1632,44 @@ function renderRotation(){
 }
 
 /* =========================================================
+   RENDER: EDUCATION
+   ========================================================= */
+function renderEducation(){
+  const list = document.getElementById('educationList');
+  if(!list) return;
+
+  if(!membersReady){
+    list.innerHTML = `<div class="note">読み込み中です…</div>`;
+    return;
+  }
+  if(!education.length){
+    list.innerHTML = `<div class="note">エデュケーションはまだ登録されていません。「エデュケーション」シートに行を追加し、「公開フラグ」にチェックを入れてください。</div>`;
+    return;
+  }
+
+  const sorted = education.slice().sort((a, b) => (a.week < b.week ? 1 : a.week > b.week ? -1 : 0));
+  list.innerHTML = sorted.map(ed => {
+    const m = memberByName_(ed.presenterName);
+    const avatar = m
+      ? avatarHTML(m.id, 48)
+      : `<div class="avatar" style="width:48px;height:48px;font-size:15px;background:var(--surface-alt);color:var(--ink-muted);">${(ed.presenterName || '').slice(0,2)}</div>`;
+    const podcastBtn = ed.podcastUrl
+      ? `<a class="btn" href="${ed.podcastUrl}" target="_blank" rel="noopener noreferrer">🎧 Podcastを聴く</a>`
+      : '';
+    return `
+    <div class="doc-row">
+      ${avatar}
+      <div>
+        <p class="name">${ed.theme || '（テーマ未設定）'}</p>
+        <div class="meta">${[ed.week, ed.presenterName, ed.category].filter(Boolean).join(' ・ ')}</div>
+      </div>
+      <div class="spacer"></div>
+      ${podcastBtn}
+    </div>`;
+  }).join('');
+}
+
+/* =========================================================
    RENDER: DOCS
    ========================================================= */
 function renderDocs(){
@@ -1917,6 +1964,14 @@ function applyMembersFromAPI(payload){
     body: a.body || '',
   })) : [];
 
+  education = Array.isArray(payload.education) ? payload.education.map(ed => ({
+    week: ed.week || '',
+    presenterName: ed.presenterName || '',
+    category: ed.category || '',
+    theme: ed.theme || '',
+    podcastUrl: ed.podcastUrl || '',
+  })) : [];
+
   updateLastUpdatedFoot(payload.updatedAt);
   renderAll();
   setDataSourceBadge('live');
@@ -2007,6 +2062,7 @@ function renderAll(){
   renderHome();
   renderMembers();
   renderRotation();
+  renderEducation();
   renderDocs();
   renderSchedule();
   renderPassport();
