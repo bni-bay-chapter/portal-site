@@ -14,7 +14,7 @@
   比べて、違っていた場合だけ静かに1回だけ読み込み直します（URLは変えません。LINEや
   Messenger等で共有した際に、リンクが長くなったり、表示が崩れたりしないようにするためです）。
 -->
-<script>window.__BNI_BUILD_ID__ = '2026-09-30-06';</script>
+<script>window.__BNI_BUILD_ID__ = '2026-09-30-08';</script>
 <script>
 (function(){
   try{
@@ -396,22 +396,22 @@
         <div class="section-title">お知らせ</div>
         <div id="homeAnnouncements" style="margin-bottom:22px;"></div>
 
-        <div class="section-title">新メンバー紹介</div>
-        <div class="section-sub">パスポートプログラムに登録されている新メンバーです</div>
-        <div class="grid cols-3" id="homeNewMembers" style="margin-bottom:22px;"></div>
-
+        <div class="section-title">次のBayチャプター</div>
         <div class="grid cols-2" style="align-items:start; margin-bottom:22px;">
           <div class="card" style="padding:18px;">
-            <div class="section-title">今週のメインプレゼン</div>
-            <div class="section-sub">今週の例会の担当者です</div>
+            <div class="section-title">メインプレゼンター</div>
             <div id="homePresenters"></div>
           </div>
           <div class="card" style="padding:18px;">
-            <div class="section-title">今週のビジター情報</div>
+            <div class="section-title">ビジター情報</div>
             <div class="section-sub" id="homeVisitorsSub"></div>
             <div id="homeVisitors"></div>
           </div>
         </div>
+
+        <div class="section-title">新メンバー紹介</div>
+        <div class="section-sub">パスポートプログラムに登録されている新メンバーです</div>
+        <div class="grid cols-3" id="homeNewMembers" style="margin-bottom:22px;"></div>
 
         <div class="section-title">直近のスケジュール</div>
         <div class="section-sub">クリックすると詳細・出欠回答画面へ移動します（すべて見るには左メニューの「スケジュール」へ）</div>
@@ -1385,7 +1385,7 @@ function passportRowHTML_(p){
     <div class="card doc-row passport-row" data-name="${attrSafe_(p.name)}" style="cursor:pointer; margin-bottom:10px;">
       <div style="min-width:0;">
         <p class="name">${p.name}</p>
-        <div class="meta">${[p.team, p.overallMentor ? '全体メンター：'+p.overallMentor : ''].filter(Boolean).join(' ／ ')}</div>
+        <div class="meta">${[p.team, p.overallMentor ? '全体メンター：'+p.overallMentor : '', p.personalMentor ? 'パーソナルメンター：'+p.personalMentor : ''].filter(Boolean).join(' ／ ')}</div>
       </div>
       <div class="spacer"></div>
       <div style="text-align:right; min-width:90px;">
@@ -1667,7 +1667,7 @@ function renderEducation(){
     return;
   }
 
-  const sorted = education.slice().sort((a, b) => (a.week < b.week ? 1 : a.week > b.week ? -1 : 0));
+  const sorted = education.slice().sort((a, b) => (a.week < b.week ? -1 : a.week > b.week ? 1 : 0));
   list.innerHTML = sorted.map(ed => {
     const m = memberByName_(ed.presenterName);
     const avatar = m
