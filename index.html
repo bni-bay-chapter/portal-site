@@ -14,7 +14,7 @@
   比べて、違っていた場合だけ静かに1回だけ読み込み直します（URLは変えません。LINEや
   Messenger等で共有した際に、リンクが長くなったり、表示が崩れたりしないようにするためです）。
 -->
-<script>window.__BNI_BUILD_ID__ = '2026-09-30-12';</script>
+<script>window.__BNI_BUILD_ID__ = '2026-09-30-13';</script>
 <script>
 (function(){
   try{
@@ -164,13 +164,16 @@
       display:block; position:sticky; top:0; z-index:10; background:var(--surface);
       border-bottom:1px solid var(--border);
     }
-    .mobile-topbar .brand{ border-bottom:none; padding:16px 16px 8px; }
-    .mobile-tabs{ display:flex; gap:6px; overflow-x:auto; padding:0 12px 12px; -webkit-overflow-scrolling:touch; }
-    .mobile-tabs button{
-      flex:0 0 auto; border:1px solid var(--border); background:var(--surface); color:var(--ink-muted);
-      padding:7px 12px; border-radius:999px; font-size:12.5px; white-space:nowrap; cursor:pointer;
+    .mobile-topbar .brand{ padding:16px 16px 8px; }
+    /* スマホでは横スクロールのタブ一覧ではなく、プルダウン（select）でメニューを選ぶ形にしています。 */
+    .mobile-tabs-select{
+      display:block; width:calc(100% - 24px); margin:0 12px 12px; padding:11px 36px 11px 14px;
+      border:1px solid var(--border); border-radius:var(--radius-m); background:var(--surface); color:var(--ink);
+      font-size:14.5px; font-weight:700; font-family:inherit; cursor:pointer;
+      -webkit-appearance:none; appearance:none;
+      background-image:url("data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='none' stroke='%23888888' stroke-width='2'%3E%3Cpath d='M5 8l5 5 5-5'/%3E%3C/svg%3E");
+      background-repeat:no-repeat; background-position:right 12px center; background-size:16px;
     }
-    .mobile-tabs button.active{ background:var(--accent); color:var(--accent-ink); border-color:var(--accent); font-weight:700;}
     .content{ padding:18px 16px 48px; }
     .topbar{ padding:14px 16px; }
   }
@@ -369,7 +372,7 @@
     <div class="eyebrow">CHAPTER PORTAL SITE</div>
     <h1 style="font-size:16px;">Bayチャプターポータルサイト</h1>
   </div>
-  <div class="mobile-tabs" id="mobileTabs"></div>
+  <select class="mobile-tabs-select" id="mobileTabsSelect" onchange="navClick(this.value)"></select>
 </div>
 
 <div class="app">
@@ -928,9 +931,9 @@ const VIEWS = [
 
 function buildNav(){
   const nav = document.getElementById('navTabs');
-  const mob = document.getElementById('mobileTabs');
+  const mobSelect = document.getElementById('mobileTabsSelect');
   nav.innerHTML = '';
-  mob.innerHTML = '';
+  mobSelect.innerHTML = '';
   VIEWS.forEach(v => {
     const b1 = document.createElement('button');
     b1.textContent = v.label;
@@ -939,11 +942,12 @@ function buildNav(){
     b1.onclick = () => navClick(v.id);
     nav.appendChild(b1);
 
-    const b2 = document.createElement('button');
-    b2.textContent = v.label;
-    b2.dataset.view = v.id;
-    b2.onclick = () => navClick(v.id);
-    mob.appendChild(b2);
+    // スマホは横スクロールのタブではなく、プルダウン（select）でメニューを選ぶ形にしているため、
+    // 件数はボタンの数字バッジではなく、選択肢の文字列に含めています（例：「メンバー一覧（42）」）。
+    const opt = document.createElement('option');
+    opt.value = v.id;
+    opt.textContent = v.count ? `${v.label}（${v.count()}）` : v.label;
+    mobSelect.appendChild(opt);
   });
 }
 
@@ -955,12 +959,16 @@ function updateNavCounts(){
   VIEWS.forEach(v => {
     if(!v.count) return;
     document.querySelectorAll(`.n[data-count-for="${v.id}"]`).forEach(n => { n.textContent = v.count(); });
+    const opt = document.querySelector(`#mobileTabsSelect option[value="${v.id}"]`);
+    if(opt) opt.textContent = `${v.label}（${v.count()}）`;
   });
 }
 
 function showView(id){
   document.querySelectorAll('.view').forEach(el => el.classList.toggle('active', el.id === 'view-'+id));
-  document.querySelectorAll('#navTabs button, #mobileTabs button').forEach(b => b.classList.toggle('active', b.dataset.view === id));
+  document.querySelectorAll('#navTabs button').forEach(b => b.classList.toggle('active', b.dataset.view === id));
+  const mobSelect = document.getElementById('mobileTabsSelect');
+  if(mobSelect) mobSelect.value = id;
   const v = VIEWS.find(v => v.id === id);
   document.getElementById('viewTitle').textContent = v.label;
   window.scrollTo({top:0});
