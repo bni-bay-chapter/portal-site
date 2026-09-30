@@ -14,7 +14,7 @@
   比べて、違っていた場合だけ静かに1回だけ読み込み直します（URLは変えません。LINEや
   Messenger等で共有した際に、リンクが長くなったり、表示が崩れたりしないようにするためです）。
 -->
-<script>window.__BNI_BUILD_ID__ = '2026-09-30-13';</script>
+<script>window.__BNI_BUILD_ID__ = '2026-09-30-14';</script>
 <script>
 (function(){
   try{
@@ -885,7 +885,14 @@ function avatarHTML(id, size){
   const c = genderColors(m.gender);
   if(m.photoUrl){
     const posY = (m.photoPosition !== undefined && m.photoPosition !== '') ? `${m.photoPosition}%` : '0%';
-    return `<div class="avatar" style="${s}background-image:url('${m.photoUrl}');background-size:cover;background-position:center ${posY};border:3px solid ${c.pale};">${''}</div>`;
+    // 「顔写真拡大率」列（任意）：100＝等倍、150なら1.5倍にアップ（拡大）。空欄・0以下・数値でない場合は等倍のままです。
+    // 写真は常に丸い枠いっぱいに表示（cover）した上で、その内側の画像だけを拡大する仕組みなので、
+    // 枠からはみ出す心配はありません（拡大の中心は「顔写真位置」と同じ高さに揃えています）。
+    const zoomRaw = Number(m.photoZoom);
+    const zoom = (!isNaN(zoomRaw) && zoomRaw > 0) ? zoomRaw / 100 : 1;
+    return `<div class="avatar" style="${s}border:3px solid ${c.pale};padding:0;overflow:hidden;position:relative;">
+      <div style="position:absolute;inset:0;background-image:url('${m.photoUrl}');background-size:cover;background-position:center ${posY};transform:scale(${zoom});transform-origin:center ${posY};"></div>
+    </div>`;
   }
   return `<div class="avatar" style="background:${c.solid};color:${c.text};${s}">${initials(m.name)}</div>`;
 }
@@ -1949,6 +1956,7 @@ function applyMembersFromAPI(payload){
     team: m.team || 'none',
     photoUrl: m.photoUrl || '',
     photoPosition: m.photoPosition || '',
+    photoZoom: m.photoZoom || '',
     website: m.website || '',
     gender: m.gender || '',
     bio: m.bio || '',
