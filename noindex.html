@@ -1,0 +1,2062 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<!-- サイトのコード（このindex.html自体）が更新された後、閲覧者のブラウザに
+     古い内容がキャッシュされて残るのをできるだけ防ぐための指定です。 -->
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+<!-- このページはチャプター内メンバー限定のポータルです。URLを直接知っている人だけが
+     開ける想定で、検索エンジンには表示されないようにしています（下のrobotsメタタグ）。 -->
+<meta name="robots" content="noindex, nofollow">
+<!--
+  BUILD_ID: このファイルを新しく書き出す（アップロードする）たびに、下の値を変えてください。
+  下のスクリプトが「今表示しているページ」と「サーバー上の最新ファイル」のBUILD_IDを
+  比べて、違っていた場合だけ静かに1回だけ読み込み直します（URLは変えません。LINEや
+  Messenger等で共有した際に、リンクが長くなったり、表示が崩れたりしないようにするためです）。
+-->
+<script>window.__BNI_BUILD_ID__ = '2026-10-04-01';</script>
+<script>
+(function(){
+  try{
+    var KEY = 'bniBuildChecked';
+    if(sessionStorage.getItem(KEY) === window.__BNI_BUILD_ID__) return;
+    fetch(location.pathname + location.search, { cache: 'no-store' })
+      .then(function(res){ return res.ok ? res.text() : null; })
+      .then(function(html){
+        if(!html) return;
+        sessionStorage.setItem(KEY, window.__BNI_BUILD_ID__);
+        var m = html.match(/__BNI_BUILD_ID__\s*=\s*'([^']+)'/);
+        if(m && m[1] && m[1] !== window.__BNI_BUILD_ID__){
+          location.reload();
+        }
+      })
+      .catch(function(){ /* 取得できなくても、通常表示を継続します */ });
+  }catch(e){}
+})();
+</script>
+<title>Bayチャプターポータルサイト</title>
+<meta name="description" content="BNIベイチャプターの運営ポータルサイトです。メンバー一覧・スピーカーローテーション・スケジュール・パスポートプログラムなどをまとめて確認できます。">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Bayチャプターポータルサイト">
+<meta property="og:title" content="Bayチャプターポータルサイト">
+<meta property="og:description" content="BNIベイチャプターの運営ポータルサイトです。メンバー一覧・スピーカーローテーション・スケジュール・パスポートプログラムなどをまとめて確認できます。">
+<meta property="og:url" content="https://bni-bay-chapter.github.io/portal-site/noindex.html">
+<meta name="twitter:card" content="summary">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@500;700;800&family=Zen+Kaku+Gothic+New:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#fff8dc;
+    --surface:#FFFFFF;
+    --surface-alt:#EBEFF4;
+    --border:#DCE1E8;
+    --ink:#151B26;
+    --ink-muted:#5B6472;
+    --ink-soft:#8993A3;
+    --accent:#8e0000;
+    --accent-ink:#FFFFFF;
+    --accent-soft:#F6E3E3;
+    --team-lt:#2F5D9B;
+    --team-membership:#B0793C;
+    --team-vcc:#1E8A99;
+    --team-event:#8B5FBF;
+    --status-good:#2E9B5D;
+    --status-good-soft:#E1F1E7;
+    --status-warn:#D98C2B;
+    --status-warn-soft:#FBEDDA;
+    --status-critical:#D64545;
+    --status-critical-soft:#FBE2E1;
+    --status-neutral:#8A94A6;
+    --status-neutral-soft:#EAEDF2;
+    --shadow: 0 1px 2px rgba(21,27,38,0.06), 0 8px 24px -12px rgba(21,27,38,0.12);
+    --radius-s:6px;
+    --radius-m:10px;
+    --radius-l:16px;
+    color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --bg:#12161D;
+      --surface:#1B212B;
+      --surface-alt:#212934;
+      --border:#2C3542;
+      --ink:#EDEFF3;
+      --ink-muted:#9AA4B2;
+      --ink-soft:#6C7684;
+      --accent:#D9776E;
+      --accent-ink:#241010;
+      --accent-soft:#3A2323;
+      --team-lt:#6C93D1;
+      --team-membership:#D3A06B;
+      --team-vcc:#4FB9C7;
+      --team-event:#B79BE0;
+      --status-good:#4FBF86;
+      --status-good-soft:#1B3427;
+      --status-warn:#E8AE5C;
+      --status-warn-soft:#3A2E19;
+      --status-critical:#E8726A;
+      --status-critical-soft:#3A1F1E;
+      --status-neutral:#9AA4B2;
+      --status-neutral-soft:#242B35;
+      --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 24px -12px rgba(0,0,0,0.5);
+      color-scheme: dark;
+    }
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--bg);
+    color:var(--ink);
+    font-family:'Zen Kaku Gothic New', 'Hiragino Kaku Gothic ProN', 'Noto Sans JP', sans-serif;
+    font-variant-numeric: tabular-nums;
+    -webkit-font-smoothing:antialiased;
+    min-height:100vh;
+  }
+  h1,h2,h3,.disp{ font-family:'Shippori Mincho', serif; text-wrap:balance; letter-spacing:.01em; }
+  a{color:var(--accent);}
+  button{font-family:inherit;}
+  ::selection{ background:var(--accent-soft); }
+
+  /* ---------- layout shell ---------- */
+  .app{ display:flex; min-height:100vh; }
+  .sidebar{
+    width:220px; flex:0 0 220px;
+    background:var(--surface);
+    border-right:1px solid var(--border);
+    display:flex; flex-direction:column;
+    position:sticky; top:0; height:100vh; overflow-y:auto;
+  }
+  .brand{ padding:22px 20px 16px; background:var(--accent); color:var(--accent-ink); }
+  .brand .eyebrow{ font-size:11px; letter-spacing:.12em; color:inherit; opacity:.85; font-weight:700; }
+  .brand h1{ font-size:19px; margin:4px 0 2px; line-height:1.35; font-weight:700; color:inherit; }
+  .brand .sub{ font-size:12px; color:inherit; opacity:.85; }
+  nav.tabs{ display:flex; flex-direction:column; padding:10px; gap:2px; flex:1; }
+  nav.tabs button{
+    text-align:left; border:none; background:transparent; color:var(--ink-muted);
+    padding:10px 12px; border-radius:var(--radius-s); font-size:14px; cursor:pointer;
+    display:flex; align-items:center; justify-content:space-between; gap:8px;
+  }
+  nav.tabs button .n{ font-size:11px; color:var(--ink-soft); font-variant-numeric:tabular-nums;}
+  nav.tabs button:hover{ background:var(--surface-alt); color:var(--ink); }
+  nav.tabs button.active{ background:var(--accent-soft); color:var(--accent); font-weight:700; }
+  .sidebar-foot{ padding:14px 20px; border-top:1px solid var(--border); font-size:11px; color:var(--ink-soft); line-height:1.6; }
+
+  .main{ flex:1 1 0%; min-width:0; width:100%; }
+  .topbar{
+    position:sticky; top:0; z-index:5;
+    background:var(--bg); border-bottom:1px solid var(--border);
+    padding:16px 28px; display:flex; align-items:baseline; justify-content:space-between; gap:12px;
+    backdrop-filter: blur(6px);
+  }
+  .topbar h2{ font-size:22px; margin:0; }
+  .topbar .meta{ font-size:12px; color:var(--ink-muted); }
+  .content{ padding:24px 28px 64px; max-width:1180px; }
+  .view{ display:none; animation:fade .25s ease; }
+  .view.active{ display:block; }
+  @keyframes fade{ from{opacity:0; transform:translateY(4px);} to{opacity:1; transform:none;} }
+
+  /* mobile nav */
+  .mobile-topbar{ display:none; }
+  @media (max-width:860px){
+    .sidebar{ display:none; }
+    .mobile-topbar{
+      display:block; position:sticky; top:0; z-index:10; background:var(--surface);
+      border-bottom:1px solid var(--border);
+    }
+    .mobile-topbar .brand{ padding:16px 16px 8px; }
+    /* スマホでは横スクロールのタブ一覧ではなく、プルダウン（select）でメニューを選ぶ形にしています。 */
+    .mobile-tabs-select{
+      display:block; width:calc(100% - 24px); margin:0 12px 12px; padding:11px 36px 11px 14px;
+      border:1px solid var(--border); border-radius:var(--radius-m); background:var(--surface); color:var(--ink);
+      font-size:14.5px; font-weight:700; font-family:inherit; cursor:pointer;
+      -webkit-appearance:none; appearance:none;
+      background-image:url("data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='none' stroke='%23888888' stroke-width='2'%3E%3Cpath d='M5 8l5 5 5-5'/%3E%3C/svg%3E");
+      background-repeat:no-repeat; background-position:right 12px center; background-size:16px;
+    }
+    .content{ padding:18px 16px 48px; }
+    .topbar{ padding:14px 16px; }
+  }
+
+  /* ---------- generic components ---------- */
+  .card{ background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-l); }
+  .section-title{ font-size:15px; font-weight:700; margin:0 0 2px; }
+  .section-sub{ font-size:12.5px; color:var(--ink-muted); margin:0 0 14px; }
+  .grid{ display:grid; gap:14px; }
+  .grid.cols-4{ grid-template-columns:repeat(4,1fr); }
+  .grid.cols-3{ grid-template-columns:repeat(3,1fr); }
+  .grid.cols-2{ grid-template-columns:repeat(2,1fr); }
+  @media (max-width:960px){ .grid.cols-4{grid-template-columns:repeat(2,1fr);} .grid.cols-3{grid-template-columns:repeat(2,1fr);} }
+  @media (max-width:600px){ .grid.cols-4,.grid.cols-3,.grid.cols-2{grid-template-columns:1fr;} }
+
+  .tag{ display:inline-flex; align-items:center; gap:5px; font-size:11.5px; font-weight:700; padding:3px 9px; border-radius:999px; white-space:nowrap; }
+  .tag.status-good{ background:var(--status-good-soft); color:var(--status-good); }
+  .tag.status-warn{ background:var(--status-warn-soft); color:var(--status-warn); }
+  .tag.status-critical{ background:var(--status-critical-soft); color:var(--status-critical); }
+  .tag.status-neutral{ background:var(--status-neutral-soft); color:var(--ink-muted); }
+  .dot{ width:7px; height:7px; border-radius:50%; display:inline-block; }
+
+  .btn{ border:1px solid var(--border); background:var(--surface); color:var(--ink); padding:9px 15px; border-radius:var(--radius-s); font-size:13.5px; cursor:pointer; font-weight:700; }
+  .btn.primary{ background:var(--accent); border-color:var(--accent); color:var(--accent-ink); }
+  .btn.ghost{ background:transparent; border-color:transparent; color:var(--accent); padding-left:4px; padding-right:4px; }
+  .btn:disabled{ opacity:.5; cursor:not-allowed; }
+  .btn:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible{ outline:2px solid var(--accent); outline-offset:2px; }
+
+  /* ---------- stat tiles ---------- */
+  .stat-tile{ padding:18px 18px 16px; display:flex; flex-direction:column; gap:6px; }
+  .stat-tile .label{ font-size:12px; color:var(--ink-muted); font-weight:700; }
+  .stat-tile .value{ font-size:28px; font-weight:800; font-family:'Shippori Mincho',serif; line-height:1.1; }
+  .stat-tile .value small{ font-size:14px; font-weight:700; color:var(--ink-muted); margin-left:2px; }
+  .stat-tile .delta{ font-size:12px; }
+  .stat-tile .delta.up{ color:var(--status-good); }
+  .stat-tile .delta.down{ color:var(--status-critical); }
+
+  /* ---------- onboarding callout ---------- */
+  .callout{ background:var(--accent-soft); border:1px solid var(--border); border-radius:var(--radius-l); padding:16px 18px; margin-bottom:20px; display:flex; gap:14px; align-items:flex-start; }
+  .callout .badge{ flex:0 0 auto; width:30px; height:30px; border-radius:50%; background:var(--accent); color:var(--accent-ink); display:flex; align-items:center; justify-content:center; font-weight:800; font-size:14px; }
+  .callout h3{ margin:0 0 4px; font-size:14.5px; }
+  .callout p{ margin:0; font-size:13px; color:var(--ink-muted); line-height:1.7; }
+  .callout ul{ margin:8px 0 0; padding-left:18px; font-size:13px; color:var(--ink-muted); line-height:1.85; }
+  .callout button.close{ margin-left:auto; border:none; background:none; color:var(--ink-soft); cursor:pointer; font-size:13px; flex:0 0 auto; }
+
+  /* ---------- avatar / member cards ---------- */
+  .avatar{ box-sizing:border-box; width:46px; height:46px; border-radius:50%; display:flex; align-items:center; justify-content:center; color:#fff; font-weight:800; font-size:15px; flex:0 0 auto; font-family:'Shippori Mincho',serif; }
+  .member-card{ padding:16px; display:flex; gap:12px; align-items:flex-start; }
+  .member-card .info{ min-width:0; }
+  .member-card .name{ font-weight:700; font-size:16px; margin:0 0 2px; }
+  .avatar-col{ display:flex; flex-direction:column; align-items:center; gap:6px; flex:0 0 auto; }
+  .member-no-big{ font-weight:800; font-size:18px; color:var(--ink); background:var(--surface-alt); border:1px solid var(--border); border-radius:8px; padding:2px 10px; line-height:1.3; }
+  .member-card .company{ font-size:13px; color:var(--ink-muted); margin:0 0 8px; overflow-wrap:anywhere; }
+  .member-card .badges{ display:flex; flex-direction:column; gap:5px; }
+  .badge-row{ display:flex; align-items:center; flex-wrap:wrap; gap:5px; }
+  .badge-label{ font-size:11.5px; color:var(--ink-muted); }
+  .cat-chip{ font-size:12px; padding:3px 9px; border-radius:999px; border:1px solid var(--border); color:var(--ink-muted); background:var(--surface-alt); }
+  .member-hp-link{ display:inline-block; margin-top:8px; font-size:12.5px; color:var(--accent, #2563eb); text-decoration:none; }
+  .member-hp-link:hover{ text-decoration:underline; }
+  /* メンバー一覧の業種カテゴリー帯・印刷専用テーブル（.member-category-*, .print-member-table）は
+     メンバー一覧そのものと一緒に index.html（別ファイル）へ分離したため、ここには残していません。 */
+
+  /* ---------- member card v2（業種カテゴリー別の名刺風カード） ---------- */
+  .member-card-v2{ display:flex; flex-direction:column; overflow:hidden; }
+  .mc-catch{ padding:12px 14px 0; font-weight:700; font-size:13px; line-height:1.5; color:var(--ink); overflow-wrap:anywhere; }
+  .mc-top{ display:flex; align-items:center; justify-content:space-between; gap:12px; padding:10px 14px; background:var(--accent); color:var(--accent-ink); }
+  .mc-nameblock{ min-width:0; }
+  .mc-name-row{ display:flex; align-items:baseline; gap:7px; }
+  .mc-no{ flex:0 0 auto; display:inline-block; background:var(--surface); color:var(--accent); font-weight:800; font-size:11.5px; border-radius:999px; padding:1px 8px; }
+  .mc-name-ja{ font-weight:800; font-size:16px; color:inherit; overflow-wrap:anywhere; }
+  .mc-name-en{ font-size:11.5px; color:inherit; opacity:.85; margin-top:3px; white-space:nowrap; }
+  .mc-photo{ flex:0 0 auto; }
+  .mc-company{ font-size:11.5px; color:var(--ink-muted); padding:8px 14px 0; overflow-wrap:anywhere; }
+  .mc-bio{ font-size:12.5px; color:var(--ink-soft); line-height:1.65; padding:8px 14px 0; margin:0; overflow-wrap:anywhere; }
+  .mc-meta{ display:flex; flex-direction:column; gap:6px; padding:10px 14px 14px; }
+  .mc-hp{ padding:0 14px 14px; }
+  .team-chip{ font-size:11px; padding:2px 8px; border-radius:999px; color:#fff; font-weight:700; }
+  .toolbar{ display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin-bottom:16px; }
+  .toolbar input[type="text"], .toolbar select{ padding:8px 11px; border-radius:var(--radius-s); border:1px solid var(--border); background:var(--surface); color:var(--ink); font-size:13px; }
+  .note{ font-size:12px; color:var(--ink-soft); margin-top:14px; line-height:1.7; }
+
+  /* ---------- rotation table ---------- */
+  table{ width:100%; border-collapse:collapse; font-size:13.5px; }
+  table.plain th, table.plain td{ text-align:left; padding:11px 12px; border-bottom:1px solid var(--border); vertical-align:middle; }
+  table.plain th{ font-size:11.5px; color:var(--ink-soft); font-weight:700; letter-spacing:.03em; }
+  .table-scroll{ overflow-x:auto; }
+  .row-person{ display:flex; align-items:center; gap:10px; }
+  .row-person .avatar{ width:34px; height:34px; font-size:12px; }
+
+  /* ---------- docs ---------- */
+  .doc-row{ display:flex; align-items:center; gap:14px; padding:14px 16px; border-bottom:1px solid var(--border); }
+  .doc-row:last-child{ border-bottom:none; }
+  .doc-icon{ width:38px; height:38px; border-radius:var(--radius-s); background:var(--surface-alt); display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:800; color:var(--ink-muted); flex:0 0 auto; }
+  .doc-row .name{ font-weight:700; font-size:13.5px; margin:0 0 3px; }
+  .doc-row .meta{ font-size:11.5px; color:var(--ink-muted); }
+  .doc-row .spacer{ flex:1; }
+
+  /* ---------- forms ---------- */
+  .form-grid{ display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+  @media (max-width:600px){ .form-grid{ grid-template-columns:1fr; } }
+  .field{ display:flex; flex-direction:column; gap:6px; }
+  .field.full{ grid-column:1/-1; }
+  .field label{ font-size:12.5px; font-weight:700; color:var(--ink-muted); }
+  .field input, .field select, .field textarea{
+    padding:10px 12px; border-radius:var(--radius-s); border:1px solid var(--border);
+    background:var(--surface); color:var(--ink); font-size:13.5px; font-family:inherit;
+  }
+  .field textarea{ resize:vertical; min-height:64px; }
+  .radio-group{ display:flex; gap:8px; flex-wrap:wrap; }
+  .radio-group label{ display:flex; align-items:center; gap:6px; font-size:13px; font-weight:500; color:var(--ink); border:1px solid var(--border); padding:8px 12px; border-radius:var(--radius-s); cursor:pointer; }
+  .radio-group input{ accent-color:var(--accent); }
+  .toast{ position:fixed; bottom:22px; right:22px; background:var(--ink); color:var(--bg); padding:12px 18px; border-radius:var(--radius-m); font-size:13px; box-shadow:var(--shadow); opacity:0; transform:translateY(8px); transition:.25s; pointer-events:none; z-index:50; }
+  .toast.show{ opacity:1; transform:none; }
+
+  /* メンバーカードのポップアップ */
+  .member-modal-overlay{ display:none; position:fixed; inset:0; background:rgba(0,0,0,.55); z-index:100; align-items:center; justify-content:center; padding:20px; }
+  .member-modal-overlay.open{ display:flex; }
+  .member-modal-box{ position:relative; width:100%; max-width:360px; max-height:88vh; overflow-y:auto; border-radius:var(--radius-l); box-shadow:var(--shadow); }
+  .member-modal-close{ position:absolute; top:8px; right:8px; z-index:1; width:30px; height:30px; border-radius:50%; border:none; background:rgba(0,0,0,.45); color:#fff; font-size:16px; line-height:1; cursor:pointer; display:flex; align-items:center; justify-content:center; }
+
+  /* ---------- team / task board ---------- */
+  .team-card{ padding:18px; border-top:4px solid var(--c,var(--accent)); }
+  .team-card .head{ display:flex; justify-content:space-between; align-items:flex-start; gap:10px; margin-bottom:10px; }
+  .team-card h3{ margin:0; font-size:16px; }
+  .team-card .lead{ font-size:12px; color:var(--ink-muted); margin:2px 0 0; }
+  .team-card p.desc{ font-size:13px; color:var(--ink-muted); line-height:1.75; margin:0 0 12px; }
+  .progress{ height:8px; border-radius:999px; background:var(--surface-alt); overflow:hidden; margin:6px 0 4px; }
+  .progress > div{ height:100%; border-radius:999px; background:var(--c,var(--accent)); }
+  .progress-label{ display:flex; justify-content:space-between; font-size:11.5px; color:var(--ink-muted); }
+  .chip-row{ display:flex; flex-wrap:wrap; gap:6px; margin-top:10px; }
+  .member-chip{ font-size:11.5px; padding:4px 10px; border-radius:999px; background:var(--surface-alt); color:var(--ink); }
+
+  .kanban{ display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin-top:14px; }
+  @media (max-width:700px){ .kanban{ grid-template-columns:1fr; } }
+  .kanban-col{ background:var(--surface-alt); border-radius:var(--radius-m); padding:10px; }
+  .kanban-col h4{ font-size:11.5px; color:var(--ink-muted); margin:2px 6px 8px; letter-spacing:.03em; display:flex; justify-content:space-between; }
+  .task-card{ background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-s); padding:10px 11px; margin-bottom:8px; font-size:12.5px; }
+  .task-card:last-child{ margin-bottom:0; }
+  .task-card .t{ font-weight:700; margin:0 0 6px; line-height:1.5; }
+  .task-card .foot{ display:flex; justify-content:space-between; align-items:center; color:var(--ink-muted); font-size:11px; }
+
+  /* ---------- master data view ---------- */
+  .master-note{ background:var(--surface-alt); border:1px dashed var(--border); border-radius:var(--radius-m); padding:16px 18px; font-size:13px; color:var(--ink-muted); line-height:1.85; margin-bottom:18px; }
+  .master-note strong{ color:var(--ink); }
+  table.master input, table.master select{ width:100%; padding:6px 8px; border-radius:6px; border:1px solid var(--border); background:var(--surface); color:var(--ink); font-size:12.5px; }
+  table.master td{ padding:8px 8px; }
+
+  .footer-note{ margin-top:36px; padding-top:16px; border-top:1px solid var(--border); font-size:11.5px; color:var(--ink-soft); }
+
+  /* ---------- 印刷／PDF出力用（メンバー一覧の「印刷する」「PDFで保存」ボタンから使用） ----------
+     どちらのボタンもブラウザの印刷ダイアログを開きます。「PDFで保存」は、そこで送信先を
+     「PDFに保存」に切り替えていただく想定です（ブラウザだけで動く静的サイトのため、
+     ダイアログを介さずに直接PDFファイルを生成することはできません）。 */
+  @media print{
+    .mobile-topbar, .sidebar, .topbar, .toolbar, .footer-note, .toast{ display:none !important; }
+    /* 写真（アバターの背景画像）や色付きの帯を印刷時にも表示させます。
+       これが無いと、ブラウザの「背景のグラフィック」設定によっては写真や色が印刷されません。 */
+    *{ -webkit-print-color-adjust:exact !important; print-color-adjust:exact !important; color-adjust:exact !important; }
+    /* ダークモード環境で見ていても、印刷・PDFでは常に読みやすい黒文字・白背景にします。 */
+    :root{
+      --bg:#ffffff !important; --surface:#ffffff !important; --surface-alt:#f2f2f2 !important;
+      --border:#cccccc !important; --ink:#000000 !important; --ink-muted:#222222 !important; --ink-soft:#444444 !important;
+    }
+    body, .app, .main, .content{ background:#fff !important; color:#000 !important; }
+    .content{ padding:0 !important; max-width:none !important; }
+    .card{ box-shadow:none !important; border:1px solid #ccc !important; }
+    .member-card-v2, .team-card{ break-inside:avoid; }
+    /* メンバー一覧専用の印刷レイアウト（カテゴリー帯の<table>繰り返し表示など）は
+       メンバー一覧そのものと一緒に index.html（別ファイル）へ分離したため、ここには残していません。 */
+  }
+</style>
+</head>
+<body>
+
+<!-- ================= Mobile top nav ================= -->
+<div class="mobile-topbar">
+  <div class="brand">
+    <div class="eyebrow">CHAPTER PORTAL SITE</div>
+    <h1 style="font-size:16px;">Bayチャプターポータルサイト</h1>
+  </div>
+  <select class="mobile-tabs-select" id="mobileTabsSelect" onchange="navClick(this.value)"></select>
+</div>
+
+<div class="app">
+
+  <!-- ================= Desktop sidebar ================= -->
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="eyebrow">CHAPTER PORTAL SITE</div>
+      <h1>Bayチャプター<br>ポータルサイト</h1>
+    </div>
+    <nav class="tabs" id="navTabs"></nav>
+    <div class="sidebar-foot">
+      運営：Webチーム<br>
+      <span id="lastUpdatedFoot">最終更新：—</span>
+    </div>
+  </aside>
+
+  <!-- ================= Main ================= -->
+  <div class="main">
+    <div class="topbar">
+      <h2 id="viewTitle">ホーム</h2>
+      <div class="meta" id="viewMeta"></div>
+    </div>
+
+    <div class="content">
+
+      <!-- ---------- HOME ---------- -->
+      <section class="view active" id="view-home">
+
+        <div class="section-title">お知らせ</div>
+        <div id="homeAnnouncements" style="margin-bottom:22px;"></div>
+
+        <div class="section-title">次のBayチャプター</div>
+        <div class="grid cols-2" style="align-items:start; margin-bottom:22px;">
+          <div class="card" style="padding:18px;">
+            <div class="section-title">メインプレゼンター</div>
+            <div id="homePresenters"></div>
+
+            <div class="section-title" style="margin-top:18px;">新メンバー紹介</div>
+            <div class="section-sub">パスポートプログラムに登録されている新メンバーです</div>
+            <div id="homeNewMembers" style="display:flex; flex-direction:column; gap:10px;"></div>
+          </div>
+          <div class="card" style="padding:18px;">
+            <div class="section-title">ビジター情報</div>
+            <div class="section-sub" id="homeVisitorsSub"></div>
+            <div id="homeVisitors"></div>
+          </div>
+        </div>
+
+        <div class="section-title">直近のスケジュール</div>
+        <div class="section-sub">クリックすると詳細・出欠回答画面へ移動します（すべて見るには左メニューの「スケジュール」へ）</div>
+        <div id="homeSchedule" style="margin-bottom:22px;"></div>
+
+      </section>
+
+      <!-- ---------- SCHEDULE ---------- -->
+      <section class="view" id="view-schedule">
+        <div id="scheduleListWrap">
+          <div class="section-title">スケジュール</div>
+          <div class="section-sub">リージョン・チャプター主催のイベント一覧です。参加を希望するイベントをクリックしてください。</div>
+          <div id="scheduleList"></div>
+        </div>
+        <div id="scheduleDetailWrap" style="display:none;">
+          <button class="btn" onclick="closeScheduleDetail()">← 一覧に戻る</button>
+          <div id="scheduleDetailBody" style="margin-top:16px;"></div>
+        </div>
+      </section>
+
+      <!-- ---------- VISITOR REGISTER ---------- -->
+      <section class="view" id="view-visitorForm">
+        <div class="section-title">ビジター登録</div>
+        <div class="section-sub">例会にお越しいただくビジターさま・代理人さまの情報を登録してください。メールアドレス・電話番号（ご本人・招待者とも）以外の項目は、ホームの「今週のビジター情報」にそのまま表示されます（代理人としてのご登録は一覧の一番最後に表示されます）。</div>
+        <div class="card" style="padding:20px; max-width:640px;">
+          <form id="visitorRegisterForm">
+            <div class="form-grid">
+              <div class="field full">
+                <label for="vfWeek">参加する定例会日選択</label>
+                <input type="date" id="vfWeek" required>
+              </div>
+              <div class="field full">
+                <label style="display:flex; align-items:center; gap:8px; padding:10px 12px; background:#fff7e6; border:1px solid #f0c36d; border-radius:8px; cursor:pointer;">
+                  <input type="checkbox" id="vfIsProxy" style="width:16px; height:16px; flex:none;">
+                  <span style="font-size:13px;">メンバーの代理人としてのご登録です（欠席メンバーの代理でご参加の場合はチェックしてください）</span>
+                </label>
+              </div>
+              <div class="field">
+                <label for="vfName">お名前</label>
+                <input type="text" id="vfName" required>
+              </div>
+              <div class="field">
+                <label for="vfKana">フリガナ</label>
+                <input type="text" id="vfKana">
+              </div>
+              <div class="field">
+                <label for="vfCompany">社名・屋号</label>
+                <input type="text" id="vfCompany">
+              </div>
+              <div class="field">
+                <label for="vfCompanyKana">社名・屋号（フリガナ）</label>
+                <input type="text" id="vfCompanyKana">
+              </div>
+              <div class="field">
+                <label for="vfEmail">メールアドレス</label>
+                <input type="email" id="vfEmail">
+              </div>
+              <div class="field">
+                <label for="vfSpecialty">お仕事の専門分野</label>
+                <input type="text" id="vfSpecialty">
+              </div>
+              <div class="field full">
+                <label for="vfWantCategory">繋がりたい業種等</label>
+                <input type="text" id="vfWantCategory">
+              </div>
+              <div class="field">
+                <label for="vfPhone">連絡先（電話番号）</label>
+                <input type="tel" id="vfPhone">
+              </div>
+              <div class="field">
+                <label for="vfInviter">招待者</label>
+                <input type="text" id="vfInviter">
+              </div>
+              <div class="field">
+                <label for="vfInviterEmail">招待者メールアドレス</label>
+                <input type="email" id="vfInviterEmail">
+              </div>
+              <div class="field full">
+                <label for="vfIntention">現時点でのビジターさまのご意向は？</label>
+                <select id="vfIntention">
+                  <option value="">選択してください</option>
+                  <option value="1.入会前提での定例会の参加">1. 入会前提での定例会の参加</option>
+                  <option value="2.興味はあるけどまだ不安がある">2. 興味はあるけどまだ不安がある</option>
+                  <option value="3.メインプレゼンの応援等">3. メインプレゼンの応援等</option>
+                </select>
+              </div>
+              <div class="field full">
+                <label for="vfWantToMeet">メンバーで繋げたい人</label>
+                <input type="text" id="vfWantToMeet">
+              </div>
+              <div class="field full">
+                <label for="vfRelationship">関係性</label>
+                <input type="text" id="vfRelationship">
+              </div>
+              <div class="field full">
+                <label for="vfNote">その他連絡事項（有の場合）</label>
+                <textarea id="vfNote"></textarea>
+              </div>
+            </div>
+            <button class="btn primary" type="submit" style="margin-top:14px;">登録する</button>
+          </form>
+        </div>
+      </section>
+
+      <!-- ---------- PASSPORT PROGRAM ---------- -->
+      <section class="view" id="view-passport">
+        <div id="passportListWrap">
+          <div class="section-title">パスポートプログラム進捗</div>
+          <div class="section-sub" id="passportSub">新メンバーの1to1メンタリング進捗です。名前をクリックすると詳細画面へ移動します。</div>
+          <div id="passportList"></div>
+        </div>
+        <div id="passportDetailWrap" style="display:none;">
+          <button class="btn" onclick="closePassportDetail()">← 一覧に戻る</button>
+          <div id="passportDetailBody" style="margin-top:16px;"></div>
+        </div>
+      </section>
+
+      <!-- ---------- MEMBERS ----------
+           メンバー一覧は、他チャプターにも公開できるよう index.html（このファイルとは別ファイル）
+           に分離しました。ここからは左メニュー「メンバー一覧」をクリックすると、
+           新しいタブでそちらが開きます（このページの内部に一覧は表示しません）。 -->
+
+      <!-- ---------- ROTATION ---------- -->
+      <section class="view" id="view-rotation">
+        <div class="section-title">スピーカーローテーション</div>
+        <div class="section-sub">週ごとのメインプレゼン2名・80秒プレゼンの一覧です（今週にあたる行はハイライトされます）。</div>
+        <div class="card table-scroll">
+          <table class="plain">
+            <thead><tr><th>週</th><th>メインプレゼン1</th><th>メインプレゼン2</th><th>80秒プレゼン</th></tr></thead>
+            <tbody id="rotationBody"></tbody>
+          </table>
+        </div>
+        <p class="note">※ 「スピーカーローテーション」シートに行を追加すると、ここと、該当週にはホーム画面にも自動反映されます。</p>
+      </section>
+
+      <!-- ---------- EDUCATION ---------- -->
+      <section class="view" id="view-education">
+        <div class="section-title">エデュケーション</div>
+        <div class="section-sub">毎週のエデュケーションプレゼンの記録です。「エデュケーション」シートの「公開フラグ」にチェックが入っている行だけ表示されます。</div>
+        <div class="card" id="educationList"></div>
+      </section>
+
+      <!-- ---------- DOCS ---------- -->
+      <section class="view" id="view-docs">
+        <div class="section-title">資料室</div>
+        <div class="section-sub">チャプター運営に関わる各種資料です。カテゴリごとに整理しています（「資料室」シートを編集すると、ここに反映されます）。</div>
+        <div class="toolbar">
+          <select id="docFilter" onchange="renderDocs()">
+            <option value="">すべてのカテゴリ</option>
+          </select>
+        </div>
+        <div class="card" id="docList"></div>
+      </section>
+
+      <!-- ATTENDANCE（旧: 毎週の定例会出欠デモ）は、Googleカレンダー連携のスケジュール機能に統合されたため削除しました。
+           出欠回答は「スケジュール」タブの各イベント詳細から行います。 -->
+
+      <!-- ---------- TASKS ---------- -->
+      <section class="view" id="view-tasks">
+        <div class="section-title">タスク・進捗管理</div>
+        <div class="section-sub">各委員会のタスクを「未着手 / 進行中 / 完了」で可視化しています。</div>
+        <div id="taskBoards"></div>
+      </section>
+
+      <!-- ---------- TEAMS ---------- -->
+      <section class="view" id="view-teams">
+        <div class="section-title">チーム紹介</div>
+        <div class="section-sub">チャプター運営を支える4つのチームです。</div>
+        <div class="grid cols-2" id="teamGrid"></div>
+      </section>
+
+      <!-- ---------- MASTER ---------- -->
+      <section class="view" id="view-master">
+        <div class="section-title">マスターデータ管理（運営担当者向け）</div>
+        <div class="master-note">
+          <strong>この仕組みについて：</strong> メンバー情報は下記の「メンバーマスター」1か所で管理し、そこから
+          <strong>メンバー一覧</strong>・<strong>スピーカーローテーション表</strong>・<strong>チーム紹介</strong>
+          が自動的に反映される構成を想定しています。担当者が変わっても、このマスターの見方さえ分かれば運営を引き継げることを目指しています。<br><br>
+          実運用では Google スプレッドシート等をマスターにし、フォーム送信やスクリプト（GAS等）による自動連携で他ページへ反映する形を想定しています。
+          このデモでは仕組みを体験いただけるよう、下の表の氏名・業種・会社名・所属チームを直接編集すると、
+          「メンバー一覧」「ローテーション表」「チーム紹介」にその場で反映されます。試しに編集してみてください。
+        </div>
+        <div class="card table-scroll">
+          <table class="plain master">
+            <thead><tr><th style="width:22%">氏名</th><th style="width:22%">業種</th><th style="width:26%">会社名</th><th style="width:20%">所属チーム</th><th>役職</th></tr></thead>
+            <tbody id="masterBody"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <div class="footer-note">
+        メンバー一覧・スピーカーローテーション・ビジター情報・スケジュール・パスポートプログラム・資料室は、いずれもベイチャプターのマスタースプレッドシート（およびGoogleカレンダー）と連携しています。
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<!-- メンバーカードのポップアップ（ホームのメインプレゼンターなどをクリックした時に表示） -->
+<div class="member-modal-overlay" id="memberModalOverlay" onclick="if(event.target===this) closeMemberModal()">
+  <div class="member-modal-box">
+    <button class="member-modal-close" onclick="closeMemberModal()" aria-label="閉じる">×</button>
+    <div id="memberModalBody"></div>
+  </div>
+</div>
+
+<script>
+/* =========================================================
+   DATA MODEL — "メンバーマスター" が単一の情報源（single source of truth）
+   実運用では Google スプレッドシート等に相当する部分
+   ========================================================= */
+const TEAM_META = {
+  LT:         { label:'リーダーシップチーム',       color:'var(--team-lt)',         desc:'リーダーシップチームは会の運営を行う中心的存在。プレジデント、バイスプレジデント、書記兼会計の3役で構成される。', cadence:'月1回 運営会議' },
+  membership: { label:'メンバーシップ委員会',       color:'var(--team-membership)', desc:'メンバーシップ委員会は、BNI 規定の執行に関する最終的な権限を有します。メンバー規定、倫理規定、BNI コアバリューを遵守しない場合、メンバーを猶予処分とするか、メンバーの専門分野を開放することができます。', cadence:'隔週ミーティング' },
+  vcc:        { label:'VCC（来訪者委員会）',        color:'var(--team-vcc)',        desc:'ビジター（見学者）の受け入れ準備とフォローアップを担当し、入会体験の質を高めます。', cadence:'毎週 例会前' },
+  event:      { label:'イベント・広報委員会',       color:'var(--team-event)',      desc:'チャプター内イベントの企画運営と、対外的な広報・SNS発信を担当します。', cadence:'月1回 企画会議' },
+};
+
+// 上記4つ（LT/メンバーシップ/VCC/イベント）以外に、会員マスターの「委員会」列で
+// 自由に作られたチーム（動的チーム）にも紹介文を出したい場合は、ここに追記します。
+// キーは委員会名をそのまま（表記ゆれは normalizeTeamText_ で吸収して比較します）。
+const TEAM_DESC_OVERRIDES = {
+  'BOD実行委員会':             'BOD実行委員会は対面イベントにおける企画・準備・運営を行い、チャプターの活性化とメンバー増加につなげる役割を担う。',
+  'メンターコーディネーター':   'メンターコーディネーターは、メンバーがリファーラルマーケティングの効果を最大化するためのパスポートプログラムを監督します。',
+  'エデュケーションコーディネーター': 'エデュケーションコーディネーターは、メンバーのネットワーキングスキルを向上させるためのネットワークエデュケーションを担当します。',
+  'トレーニングコーディネーター': 'トレーニングコーディネーターは、各種トレーニングへの参加促進を通じて、メンバーのスキルアップとBNIへの理解を深める役割を担っています。',
+  'グローバルビジネスコーディネーター': 'グローバルビジネスコーディネーターは、海外のBNIメンバーとのつながりを広げ、国境を越えたリファーラルやビジネス機会の創出を促進する役割を担っています。',
+  'Web＊zoomマスター':          '定例会を支えるWeb・Zoomマスターは、チャプターのウェブサイトやソーシャルメディアページの管理と定例会の開催にあたりZoomの管理をしていただいています。',
+  'ビジターホストコーディネーター': 'ビジターホストは、ビジター様を出迎え、ミーティング中はビジター様のサポートを行い、定例会後のフォローアップをさせていただきます。',
+  'BCP委員会':                  'BCP委員会は、災害時等におけるチャプターミーティングの開催や安否確認などに関する役割を担っています。',
+};
+function resolveTeamDesc_(rawKey){
+  const norm = normalizeTeamText_(rawKey);
+  for(const k in TEAM_DESC_OVERRIDES){
+    if(normalizeTeamText_(k) === norm) return TEAM_DESC_OVERRIDES[k];
+  }
+  return '';
+}
+
+// 会員マスターの「所属チーム」列は表記ゆれがあり得るため、代表的な別表記を吸収します。
+// ここに載っていない文字列は、そのままチーム名としてカードを自動生成します。
+const TEAM_ALIASES = {
+  LT:         ['LT', 'エルティー', 'リーダーシップチーム', 'リーダーシップ', 'LEADERSHIP TEAM', 'リーダーシップ チーム'],
+  membership: ['membership', 'メンバーシップ', 'メンバーシップ委員会', 'MC', 'MEMBERSHIP COMMITTEE'],
+  vcc:        ['vcc', 'VCC', '来訪者委員会', 'ビジター委員会', 'VISITOR COMMITTEE'],
+  event:      ['event', 'イベント', 'イベント委員会', 'イベント・広報委員会', 'イベント広報委員会', '広報委員会', '広報', 'PR', 'EVENT COMMITTEE'],
+};
+// チーム紹介の並び順：LT→メンバーシップ→VCC→イベントの順を必ず優先します
+// （BNIの慣例として、リーダーシップチームは常に一番先頭に表示されるべきのため）。
+// これ以外の（会員マスターで自由に作られた）チームは、末尾にまとめ、
+// その中では表示番号が一番若いメンバーがいる順に並びます。
+const TEAM_ORDER_PRIORITY = { LT: 0, membership: 1, vcc: 2, event: 3 };
+function normalizeTeamText_(s){
+  return String(s || '').replace(/[\s　]/g, '').toLowerCase();
+}
+// 所属チームの生テキストから、既知のチームキー（LT/membership/vcc/event）か、
+// 一致しなければ元の文字列そのものをキーとして返します（動的チームカード用）。
+// 「none」は「チーム未設定」を表す内部の目印なので、チーム紹介からは除外します。
+function resolveTeamKey_(raw){
+  const norm = normalizeTeamText_(raw);
+  if(!norm || norm === 'none') return '';
+  for(const key in TEAM_ALIASES){
+    if(TEAM_ALIASES[key].some(a => normalizeTeamText_(a) === norm)) return key;
+  }
+  return String(raw).trim();
+}
+const TEAM_AUTO_PALETTE = ['#8a6dd1', '#d1748a', '#4fa3d9', '#d9a24f', '#5fb98c', '#b06fd1', '#e08a5c', '#5cb3b0'];
+
+// 「委員会」列に複数のチームがまとめて書かれている場合（例：「メンバーシップ委員会、VCC」）に、
+// 両方のチームカードへ表示できるよう、読点・カンマ・スラッシュ・中黒で区切って分割します。
+function splitTeamValues_(raw){
+  return String(raw || '')
+    .split(/[、,，\/・\n]+/)
+    .map(s => s.trim())
+    .filter(Boolean);
+}
+
+// 「委員会」列の1つの区切りから、チーム名と（あれば）そのチーム内での役職を取り出します。
+// 例："メンバーシップ委員会（リーダー）" → { name:'メンバーシップ委員会', role:'リーダー' }
+// 括弧が無い場合は role は null（その場合は「所属チーム」列の値をそのまま使います）。
+// 2つ以上の委員会に所属していて、片方だけリーダー／副リーダー等の場合は、
+// 違う方の委員会名の後ろにだけ（役職）を書き足せば、そちらだけ役職を上書きできます。
+function parseTeamSegment_(segment){
+  const m = String(segment || '').trim().match(/^(.*?)[（(]([^）)]+)[）)]\s*$/);
+  if(m) return { name: m[1].trim(), role: m[2].trim() };
+  return { name: String(segment || '').trim(), role: null };
+}
+
+// 「所属チーム」（役職・肩書き）の文字列から、リーダー／副リーダー的な立場かどうかを判定します。
+// 「副リーダー」「副委員長」「副会長」は、先に判定してリーダー判定から除外します
+// （「副リーダー」も文字列として「リーダー」を含んでしまうため）。
+function isSubLeaderRole_(role){
+  return /副リーダー|副委員長|副会長/.test(String(role || ''));
+}
+function isLeaderRole_(role){
+  const r = String(role || '');
+  if(isSubLeaderRole_(r)) return false;
+  return /リーダー|委員長|会長/.test(r);
+}
+// 並び順用：リーダー→副リーダー→それ以外、の順にするための数値を返します。
+function leaderRank_(role){
+  if(isLeaderRole_(role)) return 0;
+  if(isSubLeaderRole_(role)) return 1;
+  return 2;
+}
+
+// 会員マスターの「委員会」を、複数チーム所属にも対応してグループ化します。
+// renderTeams()（表示）と、左メニューの件数表示の両方から、同じ結果を参照します。
+function computeTeamGroups_(){
+  const groups = {};
+  const order = [];
+  members.forEach(m => {
+    const segments = splitTeamValues_(m.team).map(parseTeamSegment_);
+    const seenKeys = new Set();
+    segments.forEach(seg => {
+      const key = resolveTeamKey_(seg.name);
+      if(!key || seenKeys.has(key)) return;
+      seenKeys.add(key);
+      if(!groups[key]){
+        const known = TEAM_META[key];
+        groups[key] = known
+          ? { label: known.label, color: known.color, desc: known.desc, cadence: known.cadence, roster: [] }
+          : { label: key, color: '', desc: resolveTeamDesc_(key), cadence: '', roster: [] };
+        order.push(key);
+      }
+      // このチームでの役職：（役職）の指定があればそれを優先し、無ければ「所属チーム」列の値を使います。
+      // これにより、複数の委員会に所属していて片方だけリーダー等の場合も、正しく出し分けられます。
+      const entry = seg.role ? Object.assign({}, m, { role: seg.role }) : m;
+      groups[key].roster.push(entry);
+    });
+  });
+
+  // チームカードの並び順：まずLT→メンバーシップ→VCC→イベントの固定順を優先し、
+  // それ以外の（自由に作られた）チームは、表示番号が一番若いメンバーがいる順に、
+  // 固定順のチームより後ろにまとめて並べます。
+  order.sort((a, b) => {
+    const pa = TEAM_ORDER_PRIORITY.hasOwnProperty(a) ? TEAM_ORDER_PRIORITY[a] : 100;
+    const pb = TEAM_ORDER_PRIORITY.hasOwnProperty(b) ? TEAM_ORDER_PRIORITY[b] : 100;
+    if(pa !== pb) return pa - pb;
+    const minId = g => Math.min(...g.roster.map(m => { const n = Number(m.id); return isNaN(n) ? Infinity : n; }));
+    return minId(groups[a]) - minId(groups[b]);
+  });
+
+  return { groups, order };
+}
+
+// マスター（API）からの読み込みが終わるまでは true になりません。
+// これが false の間は、ホーム画面・メンバー一覧に下のサンプル人物名を
+// 表示せず、「読み込み中」の表示にします（実データ取得後 or タイムアウト後に true へ）。
+let membersReady = false;
+
+let members = [
+  { id:1,  name:'山田 隆',   category:'税理士',           company:'やまだ税理士事務所',           team:'LT',         role:'会長',   gender:'男性' },
+  { id:2,  name:'佐藤 恵美', category:'行政書士',         company:'さとう行政書士事務所',         team:'LT',         role:'副会長', gender:'女性' },
+  { id:3,  name:'高橋 直樹', category:'Web制作',          company:'タカハシデザイン合同会社',     team:'membership', role:'委員長', gender:'男性' },
+  { id:4,  name:'田中 美咲', category:'生命保険',         company:'タナカ生命保険代理店',         team:'membership', role:'委員',   gender:'女性' },
+  { id:5,  name:'伊藤 健太', category:'不動産',           company:'伊藤不動産株式会社',           team:'vcc',        role:'委員長', gender:'男性' },
+  { id:6,  name:'渡辺 由美', category:'美容室経営',       company:'サロン ワタナベ',              team:'vcc',        role:'委員',   gender:'女性' },
+  { id:7,  name:'中村 誠',   category:'印刷',             company:'中村印刷株式会社',             team:'event',      role:'委員長', gender:'男性' },
+  { id:8,  name:'小林 彩',   category:'写真撮影',         company:'コバヤシフォトスタジオ',       team:'event',      role:'委員',   gender:'女性' },
+  { id:9,  name:'加藤 大輔', category:'内装工事',         company:'カトウ内装',                   team:'none',       role:'一般会員', gender:'男性' },
+  { id:10, name:'吉田 香織', category:'人材紹介',         company:'よしだキャリアパートナーズ',   team:'none',       role:'一般会員', gender:'女性' },
+  { id:11, name:'山本 剛',   category:'ITシステム開発',   company:'山本システムズ株式会社',       team:'none',       role:'一般会員', gender:'男性' },
+  { id:12, name:'松本 麻衣', category:'金融コンサル',     company:'マツモトFPオフィス',           team:'none',       role:'一般会員', gender:'女性' },
+  { id:13, name:'井上 一郎', category:'建築設計',         company:'井上設計事務所',               team:'none',       role:'一般会員', gender:'男性' },
+  { id:14, name:'木村 沙織', category:'動画制作',         company:'キムラ映像制作',               team:'none',       role:'一般会員', gender:'女性' },
+  { id:15, name:'林 修平',   category:'飲食店経営',       company:'割烹はやし',                   team:'none',       role:'一般会員', gender:'男性' },
+  { id:16, name:'清水 陽子', category:'損害保険',         company:'シミズ損保代理店',             team:'none',       role:'一般会員', gender:'女性' },
+];
+
+const AVATAR_PALETTE = ['#5C7BA6','#7A9E7E','#B08A9E','#B79A6B','#8E7CB0','#5FA3A3'];
+// 性別によるアイコン配色。「性別」データがない場合は中間色（グレー系）にフォールバックします。
+const GENDER_COLORS = {
+  '男性': { solid:'#f0fff0', pale:'#f0fff0', text:'#0f3d33' },
+  '女性': { solid:'#ffe4e1', pale:'#ffe4e1', text:'#5c2a2a' },
+  default: { solid:'#8B95A1', pale:'#D9DEE4', text:'#fff' },
+};
+
+/* ベイチャプター 会員マスター 公開用API（GAS）。
+   マスターの「会員マスター」シートを唯一の情報源として、電話番号・メールアドレスを
+   除いた項目だけをここから取得します。取得できない場合は、下のサンプルデータのまま表示します。 */
+const MEMBER_API_URL = 'https://script.google.com/macros/s/AKfycbwCpHflhEUfSbGa69FgVxTscfaM6wBSdNSCFopIq3O5Y-PzXdZb_875j75JOuAgqw2mLw/exec';
+
+// ↓ ここから、マスター連携の「実データ」用（API読み込み後に applyMembersFromAPI で入ります）
+let speakerRotation   = []; // スピーカーローテーション（メインプレゼン2名・80秒プレゼン）
+let visitors         = []; // ビジター管理（週ごと・1人1行）
+let scheduleEvents    = []; // スケジュール管理（リージョン/チャプター主催イベント）
+let passportItems     = []; // パスポート担当者（項目定義）
+let passportProgress  = []; // パスポート進捗（新メンバーごと）
+let attendanceRecords = []; // 出欠管理（スケジュールへの回答一覧）
+let documents         = []; // 資料室（マスターの「資料室」シートで管理）
+let announcements     = []; // お知らせ（会員マスターと同じスプレッドシートの「お知らせ」タブで管理）
+let education         = []; // エデュケーション（会員マスターと同じスプレッドシートの「エデュケーション」タブで管理）
+
+// ↓ ここから下は、他タブ（タスク進捗など）のデモ表示用サンプルデータです
+const teamTasks = {
+  LT: [
+    { title:'月次運営会議のアジェンダ作成', assigneeId:2, status:'進行中', due:'09/25' },
+    { title:'新メンバー面談スケジュール調整', assigneeId:1, status:'完了', due:'09/18' },
+    { title:'四半期目標のレビュー資料作成', assigneeId:1, status:'未着手', due:'10/01' },
+  ],
+  membership: [
+    { title:'新メンバー候補者リストアップ', assigneeId:3, status:'進行中', due:'09/20' },
+    { title:'退会検討者への1to1実施', assigneeId:4, status:'未着手', due:'09/30' },
+    { title:'メンバー満足度アンケート集計', assigneeId:3, status:'完了', due:'09/15' },
+    { title:'オンボーディング資料の更新', assigneeId:4, status:'進行中', due:'09/28' },
+  ],
+  vcc: [
+    { title:'来週の来訪者受け入れ準備', assigneeId:5, status:'進行中', due:'09/21' },
+    { title:'ビジターフォローアップ架電', assigneeId:6, status:'未着手', due:'09/24' },
+    { title:'VCCマニュアル改訂', assigneeId:5, status:'完了', due:'09/10' },
+  ],
+  event: [
+    { title:'忘年会イベント企画', assigneeId:7, status:'未着手', due:'10/15' },
+    { title:'SNS投稿カレンダー作成', assigneeId:8, status:'進行中', due:'09/22' },
+    { title:'チャプター紹介動画の撮影', assigneeId:8, status:'未着手', due:'10/05' },
+    { title:'ロゴ入り名刺デザイン更新', assigneeId:7, status:'完了', due:'09/12' },
+  ],
+};
+
+/* =========================================================
+   HELPERS
+   ========================================================= */
+function memberById(id){ return members.find(m => m.id === id); }
+
+// メンバーカードのポップアップ（ホームのメインプレゼンターなど、名前をクリックした時に表示）。
+// メンバー一覧と同じカード（memberCardHTML_）をそのまま再利用しています。
+function openMemberModal(memberId){
+  const m = memberById(memberId);
+  if(!m) return;
+  document.getElementById('memberModalBody').innerHTML = memberCardHTML_(m);
+  document.getElementById('memberModalOverlay').classList.add('open');
+}
+function closeMemberModal(){
+  document.getElementById('memberModalOverlay').classList.remove('open');
+}
+document.addEventListener('keydown', e => { if(e.key === 'Escape') closeMemberModal(); });
+// スピーカーローテーション等、他シートに手入力された氏名で会員マスターを引く際、
+// 前後の空白・全角/半角スペースの違いだけで一致しなくなるのを防ぐための緩い照合
+function normalizeName_(s){ return String(s||'').trim().replace(/[\s　]+/g, ''); }
+function memberByName_(name){
+  const key = normalizeName_(name);
+  if(!key) return null;
+  return members.find(x => normalizeName_(x.name) === key) || null;
+}
+function initials(name){ return name.split(' ')[0] || name.slice(0,2); }
+function genderColors(gender){ return GENDER_COLORS[gender] || GENDER_COLORS.default; }
+function avatarHTML(id, size){
+  const m = memberById(id);
+  if(!m) return '';
+  const s = size ? `width:${size}px;height:${size}px;font-size:${Math.round(size*0.33)}px;` : '';
+  const c = genderColors(m.gender);
+  if(m.photoUrl){
+    const posY = (m.photoPosition !== undefined && m.photoPosition !== '') ? `${m.photoPosition}%` : '0%';
+    // 「顔写真拡大率」列（任意）：100＝等倍、150なら1.5倍にアップ（拡大）。空欄・0以下・数値でない場合は等倍のままです。
+    // 写真は常に丸い枠いっぱいに表示（cover）した上で、その内側の画像だけを拡大する仕組みなので、
+    // 枠からはみ出す心配はありません（拡大の中心は「顔写真位置」と同じ高さに揃えています）。
+    const zoomRaw = Number(m.photoZoom);
+    const zoom = (!isNaN(zoomRaw) && zoomRaw > 0) ? zoomRaw / 100 : 1;
+    return `<div class="avatar" style="${s}border:3px solid ${c.pale};padding:0;overflow:hidden;position:relative;">
+      <div style="position:absolute;inset:0;background-image:url('${m.photoUrl}');background-size:cover;background-position:center ${posY};transform:scale(${zoom});transform-origin:center ${posY};"></div>
+    </div>`;
+  }
+  return `<div class="avatar" style="background:${c.solid};color:${c.text};${s}">${initials(m.name)}</div>`;
+}
+function statusTag(status){
+  const map = {
+    '完了':'status-good', '準備完了':'status-good', '出席':'status-good',
+    '進行中':'status-warn', '資料準備中':'status-warn', '遅刻':'status-warn', '60分ルール':'status-warn',
+    '未着手':'status-neutral', '未定':'status-critical', '欠席':'status-critical', '未回答':'status-neutral',
+  };
+  return `<span class="tag ${map[status]||'status-neutral'}">${status}</span>`;
+}
+function teamChip(teamKey){
+  if(teamKey === 'none') return `<span class="cat-chip">一般会員</span>`;
+  const t = TEAM_META[teamKey];
+  if(!t) return '';
+  return `<span class="team-chip" style="background:${t.color}">${t.label}</span>`;
+}
+function toast(msg){
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(toast._t);
+  toast._t = setTimeout(()=> el.classList.remove('show'), 2600);
+}
+
+/* =========================================================
+   NAV
+   ========================================================= */
+// 「メンバー一覧」は、他チャプターにも公開できるよう index.html（別ファイル）に分離したため、
+// ここでは内部の画面切り替え（showView）ではなく、別タブでそちらを開くリンクにしています。
+const VIEWS = [
+  { id:'home',       label:'ホーム' },
+  { id:'members',    label:'メンバー一覧',       count:()=>members.length, href:'index.html' },
+  { id:'rotation',   label:'スピーカーローテーション', count:()=>speakerRotation.length },
+  { id:'education',  label:'エデュケーション',    count:()=>education.length },
+  { id:'docs',       label:'資料室',             count:()=>documents.length },
+  { id:'schedule',   label:'スケジュール',       count:()=>scheduleEvents.length },
+  { id:'visitorForm', label:'ビジター登録' },
+  { id:'passport',   label:'パスポートプログラム', count:()=>passportProgress.length },
+  { id:'teams',      label:'チーム紹介',         count:()=>computeTeamGroups_().order.length },
+  // 「タスク・進捗」「マスターデータ」は、後日メンバーを限定した専用ページに
+  // する予定のため、いったんメニューから非表示にしています
+  // （中身のコード自体は残っているので、後で簡単に戻せます）。
+];
+
+function buildNav(){
+  const nav = document.getElementById('navTabs');
+  const mobSelect = document.getElementById('mobileTabsSelect');
+  nav.innerHTML = '';
+  mobSelect.innerHTML = '';
+  VIEWS.forEach(v => {
+    const b1 = document.createElement('button');
+    b1.textContent = v.label;
+    b1.dataset.view = v.id;
+    if(v.count){ const n=document.createElement('span'); n.className='n'; n.dataset.countFor=v.id; n.textContent=v.count(); b1.appendChild(n); }
+    // 「メンバー一覧」など href を持つ項目は、画面切り替えではなく別タブで開きます。
+    b1.onclick = v.href ? () => window.open(v.href, '_blank') : () => navClick(v.id);
+    nav.appendChild(b1);
+
+    // スマホは横スクロールのタブではなく、プルダウン（select）でメニューを選ぶ形にしているため、
+    // 件数はボタンの数字バッジではなく、選択肢の文字列に含めています（例：「メンバー一覧（42）」）。
+    const opt = document.createElement('option');
+    opt.value = v.id;
+    opt.textContent = v.count ? `${v.label}（${v.count()}）` : v.label;
+    mobSelect.appendChild(opt);
+  });
+}
+
+// buildNav()はページ読み込み時に一度だけ実行されるため、その時点ではまだ
+// マスターからの実データが届いておらず、メニューの件数（16名など）が
+// サンプルデータの数のまま固定されてしまっていました。
+// データが更新されるたびにこの関数を呼び、件数の数字だけを更新します。
+function updateNavCounts(){
+  VIEWS.forEach(v => {
+    if(!v.count) return;
+    document.querySelectorAll(`.n[data-count-for="${v.id}"]`).forEach(n => { n.textContent = v.count(); });
+    const opt = document.querySelector(`#mobileTabsSelect option[value="${v.id}"]`);
+    if(opt) opt.textContent = `${v.label}（${v.count()}）`;
+  });
+}
+
+// 今表示している画面のID（メンバー一覧を別タブで開いた後、スマホのプルダウンを
+// 「メンバー一覧」で止まったままにせず、元の画面に戻すために使います）。
+let currentViewId_ = 'home';
+
+function showView(id){
+  document.querySelectorAll('.view').forEach(el => el.classList.toggle('active', el.id === 'view-'+id));
+  document.querySelectorAll('#navTabs button').forEach(b => b.classList.toggle('active', b.dataset.view === id));
+  const mobSelect = document.getElementById('mobileTabsSelect');
+  if(mobSelect) mobSelect.value = id;
+  const v = VIEWS.find(v => v.id === id);
+  document.getElementById('viewTitle').textContent = v.label;
+  currentViewId_ = id;
+  window.scrollTo({top:0});
+}
+
+// 左メニュー・スマホ用メニューのタブ切り替え。「スケジュール」タブは
+// クリックのたびに一覧画面から始まるようにする（詳細を開いたまま残さない）。
+// 「メンバー一覧」のように href を持つ項目は、別タブでそちらを開くだけで、
+// このポータル側の画面は切り替えません（スマホのプルダウンも元の画面表示に戻します）。
+function navClick(id){
+  const v = VIEWS.find(v => v.id === id);
+  if(v && v.href){
+    window.open(v.href, '_blank');
+    const mobSelect = document.getElementById('mobileTabsSelect');
+    if(mobSelect) mobSelect.value = currentViewId_;
+    return;
+  }
+  if(id === 'schedule') closeScheduleDetail();
+  if(id === 'passport') closePassportDetail();
+  showView(id);
+}
+
+/* =========================================================
+   日付ヘルパー（「今週（＝次回の例会）」の判定・新メンバー判定・並び替えに使用）
+   ---------------------------------------------------------
+   「今週」はカレンダー上の月〜日ではなく、「直近でまだ開催されていない
+   （＝これから来る）例会日、無ければ一番最近開催された例会日」として判定します。
+   例会は毎週同じ曜日とは限らず、また週の途中（日〜火など）で見ると
+   カレンダー週での一致判定は「今週分がまだ入っていない」ように見えて
+   分かりにくいため、この方式にしています。
+   ========================================================= */
+function parseYmd_(s){
+  if(!s) return null;
+  const d = new Date(String(s) + 'T00:00:00');
+  return isNaN(d) ? null : d;
+}
+function nearestActiveDate_(dateStrings){
+  const today = new Date(); today.setHours(0,0,0,0);
+  const dated = dateStrings.map(parseYmd_).filter(Boolean);
+  if(!dated.length) return null;
+  const upcoming = dated.filter(d => d.getTime() >= today.getTime()).sort((a,b)=>a-b);
+  if(upcoming.length) return upcoming[0].getTime();
+  const past = dated.filter(d => d.getTime() < today.getTime()).sort((a,b)=>b-a);
+  return past.length ? past[0].getTime() : null;
+}
+function currentRotationWeekKey_(){
+  return nearestActiveDate_(speakerRotation.map(r => r.week));
+}
+function thisWeekRotation(){
+  const key = currentRotationWeekKey_();
+  if(key === null) return null;
+  return speakerRotation.find(r => { const d = parseYmd_(r.week); return d && d.getTime() === key; }) || null;
+}
+function currentVisitorWeekKey_(){
+  return nearestActiveDate_(visitors.map(v => v.week));
+}
+function thisWeekVisitors(){
+  const key = currentVisitorWeekKey_();
+  if(key === null) return [];
+  return visitors.filter(v => { const d = parseYmd_(v.week); return d && d.getTime() === key; });
+}
+// ホームの「今週のビジター情報」用カード。メールアドレス・電話番号（ビジターご本人・
+// 招待者とも）以外は、登録された内容をすべてここに表示します。
+function visitorCardHTML_(v){
+  const companyLine = [v.company, v.companyKana ? `（${v.companyKana}）` : ''].join('');
+  const line = (label, value) => value ? `<div style="font-size:11.5px; color:var(--ink-soft); margin-top:3px;">${label}：${value}</div>` : '';
+  const badge = v.isProxy
+    ? `<span style="display:inline-block; padding:2px 8px; margin-left:6px; font-size:10.5px; font-weight:700; color:#8a5700; background:#fff1cc; border:1px solid #f0c36d; border-radius:10px; vertical-align:middle;">代理人様</span>`
+    : `<span style="display:inline-block; padding:2px 8px; margin-left:6px; font-size:10.5px; font-weight:700; color:#0a5c36; background:#e6f7ee; border:1px solid #8fd9b6; border-radius:10px; vertical-align:middle;">ビジター様</span>`;
+  return `
+    <div style="margin-bottom:14px; padding-bottom:14px; border-bottom:1px solid var(--border);">
+      <div style="font-weight:700; font-size:13.5px;">${v.name}様${badge}${v.kana ? `（${v.kana}）` : ''}</div>
+      <div style="font-size:12px; color:var(--ink-muted); margin-top:2px;">${[companyLine, v.category, v.specialty].filter(Boolean).join(' ／ ')}</div>
+      ${line('繋がりたい業種等', v.wantCategory)}
+      ${line('招待者', v.referrer)}
+      ${line('現時点でのご意向', v.intention)}
+      ${line('メンバーで繋げたい人', v.wantToMeet)}
+      ${line('関係性', v.relationship)}
+      ${line('その他連絡事項', v.note)}
+    </div>`;
+}
+// ホームの「新メンバー紹介」用：パスポートプログラム（パスポート進捗シート）に
+// 登録されている新メンバーを、初回定例会参加日が新しい順に並べます。
+function passportNewMemberList(){
+  return passportProgress
+    .slice()
+    .sort((a,b) => (b.joinDate||'').localeCompare(a.joinDate||''));
+}
+function upcomingScheduleList(limit){
+  const today = new Date(); today.setHours(0,0,0,0);
+  const list = scheduleEvents
+    .filter(ev => {
+      if(!ev.date) return false;
+      const d = new Date(ev.date + 'T00:00:00');
+      return !isNaN(d) && d >= today;
+    })
+    .sort((a,b) => a.date < b.date ? -1 : a.date > b.date ? 1 : 0);
+  return limit ? list.slice(0, limit) : list;
+}
+function passportTotal_(){ return passportItems.length || 14; }
+function passportDoneCount_(p){
+  return passportItems.filter(it => p.items && p.items[it.id]).length;
+}
+
+/* =========================================================
+   RENDER: HOME
+   ========================================================= */
+// お知らせの日付（'yyyy-MM-dd'）を「yyyy年M月d日」の表示に整えます。
+function formatAnnDate_(s){
+  const m = String(s || '').match(/^(\d{4})-(\d{2})-(\d{2})/);
+  if(!m) return s || '';
+  return `${Number(m[1])}年${Number(m[2])}月${Number(m[3])}日`;
+}
+
+// 会員マスターと同じスプレッドシートの「お知らせ」タブ（日付／タイトル／本文の3列）から
+// 表示します。新しい日付のものが先頭、直近5件のみ表示します
+// （増えすぎるとホーム画面が長くなるため。それより前のお知らせを消したい場合は、
+// スプレッドシート側でその行を削除するだけでOKです）。
+function renderAnnouncements(){
+  const wrap = document.getElementById('homeAnnouncements');
+  if(!wrap) return;
+  const list = announcements
+    .filter(a => a.title || a.body)
+    .slice()
+    .sort((a, b) => (a.date < b.date ? 1 : a.date > b.date ? -1 : 0))
+    .slice(0, 5);
+
+  if(!list.length){
+    wrap.innerHTML = `<div class="note">現在、お知らせはありません。</div>`;
+    return;
+  }
+
+  wrap.innerHTML = list.map(a => `
+    <div class="callout" style="margin-bottom:12px;">
+      <div class="badge">📢</div>
+      <div>
+        ${a.date ? `<div style="font-size:12px; color:var(--ink-muted); margin-bottom:2px;">${formatAnnDate_(a.date)}</div>` : ''}
+        ${a.title ? `<h3>${escapeHtmlKeepBreaks_(a.title)}</h3>` : ''}
+        ${a.body ? `<p>${escapeHtmlKeepBreaks_(a.body)}</p>` : ''}
+      </div>
+    </div>
+  `).join('');
+}
+
+function renderHome(){
+  if(!membersReady){
+    document.getElementById('homeAnnouncements').innerHTML = `<div class="note">読み込み中です…</div>`;
+    document.getElementById('homeNewMembers').innerHTML = `<div class="note">読み込み中です…</div>`;
+    document.getElementById('homePresenters').innerHTML = `<div class="note">読み込み中です…</div>`;
+    document.getElementById('homeVisitors').innerHTML = '';
+    document.getElementById('homeVisitorsSub').textContent = '';
+    document.getElementById('homeSchedule').innerHTML = `<div class="note">読み込み中です…</div>`;
+    return;
+  }
+
+  // ---- お知らせ（会員マスターと同じスプレッドシートの「お知らせ」タブより） ----
+  renderAnnouncements();
+
+  // ---- 新メンバー紹介（パスポート進捗シートより） ----
+  const newMembersGrid = document.getElementById('homeNewMembers');
+  const nm = passportNewMemberList();
+  newMembersGrid.innerHTML = nm.length ? nm.map(p => {
+    const m = memberByName_(p.name);
+    return `
+    <div class="card" style="padding:16px; display:flex; gap:12px; align-items:center;">
+      ${m ? avatarHTML(m.id, 56) : `<div class="avatar" style="width:56px;height:56px;font-size:18px;background:var(--surface-alt);color:var(--ink-muted);">${p.name.slice(0,2)}</div>`}
+      <div style="min-width:0;">
+        <div style="font-weight:700; font-size:14.5px;">${p.name}</div>
+        <div style="font-size:12px; color:var(--ink-muted); margin-top:2px;">${p.joinDate ? '初回定例会参加日：'+p.joinDate : '初回定例会参加日：未登録'}</div>
+      </div>
+    </div>`;
+  }).join('') : `<div class="note">パスポートプログラムに登録されている新メンバーはいません。</div>`;
+
+  // ---- 今週のメインプレゼン（2名）＋80秒プレゼン ----
+  const rot = thisWeekRotation();
+  const presWrap = document.getElementById('homePresenters');
+  if(!rot){
+    presWrap.innerHTML = `<div class="note">今週のプレゼン情報はまだ登録されていません。</div>`;
+  } else {
+    const presenterRow = (name, topic) => {
+      if(!name) return '';
+      const m = memberByName_(name);
+      const clickAttr = m ? ` onclick="openMemberModal(${m.id})"` : '';
+      return `
+        <div class="card" style="padding:12px 14px; display:flex; gap:12px; align-items:center; margin-bottom:10px; ${m ? 'cursor:pointer;' : ''}"${clickAttr}>
+          ${m ? avatarHTML(m.id, 44) : `<div class="avatar" style="width:44px;height:44px;background:var(--surface-alt);color:var(--ink-muted);">${name.slice(0,2)}</div>`}
+          <div style="min-width:0;">
+            <div style="font-weight:700; font-size:14px;">${name}</div>
+            ${topic ? `<div style="font-size:12px; color:var(--ink-muted); overflow-wrap:anywhere;">カテゴリー：${topic}</div>` : ''}
+          </div>
+        </div>`;
+    };
+    presWrap.innerHTML = presenterRow(rot.presenter1, rot.topic1) + presenterRow(rot.presenter2, rot.topic2)
+      + (rot.eighty ? `<div class="note" style="margin-top:4px;">80秒プレゼン：<strong>${rot.eighty}</strong></div>` : '');
+  }
+
+  // ---- 今週のビジター情報 ----
+  // メールアドレス・電話番号（ビジターご本人・招待者とも）以外は、すべてここに表示します。
+  // ビジターを先に、代理人を一番最後に表示します
+  const tv = thisWeekVisitors().slice().sort((a, b) => (a.isProxy ? 1 : 0) - (b.isProxy ? 1 : 0));
+  document.getElementById('homeVisitorsSub').textContent = tv.length ? `${tv.length}名` : '';
+  document.getElementById('homeVisitors').innerHTML = tv.length ? tv.map(v => visitorCardHTML_(v)).join('') : `<div class="note">今週のビジター登録はまだありません。</div>`;
+
+  // ---- 直近のスケジュール（5件） ----
+  const upcoming = upcomingScheduleList(5);
+  document.getElementById('homeSchedule').innerHTML = upcoming.length ? `
+    <div>
+      ${upcoming.map(ev => scheduleRowHTML(ev)).join('')}
+    </div>
+  ` : `<div class="note">今後のスケジュールはまだ登録されていません。</div>`;
+}
+
+/* =========================================================
+   RENDER: SCHEDULE（スケジュール一覧・詳細・出欠回答）
+   ========================================================= */
+function attrSafe_(s){ return String(s||'').replace(/"/g, '&quot;').replace(/'/g, '&#39;'); }
+
+// タイトルに「定例会」を含むイベントは、申込不要の通常例会とみなし、
+// URLが入っていても「要申込」表示や申込ボタンは出しません。
+function requiresApplicationLink_(ev){
+  return !!(ev.url && !/定例会/.test(ev.title || ''));
+}
+
+function scheduleRowHTML(ev){
+  const dateLabel = ev.date ? ev.date.slice(5).replace('-','/') : '';
+  return `
+    <div class="card doc-row schedule-row" data-id="${attrSafe_(ev.id)}" style="cursor:pointer; margin-bottom:10px;">
+      <div class="doc-icon">${dateLabel}${ev.time ? `<br>${ev.time}` : ''}</div>
+      <div style="min-width:0;">
+        <p class="name">${ev.title}</p>
+        <div class="meta">${ev.place || ''}</div>
+      </div>
+      <div class="spacer"></div>
+      ${requiresApplicationLink_(ev) ? `<span class="tag status-good">要申込</span>` : ''}
+    </div>`;
+}
+
+function bindScheduleRows_(container){
+  container.querySelectorAll('.schedule-row').forEach(row => {
+    row.onclick = () => openScheduleDetail(row.dataset.id);
+  });
+}
+
+function renderSchedule(){
+  const list = document.getElementById('scheduleList');
+  if(!list) return;
+  const upcoming = upcomingScheduleList();
+  list.innerHTML = upcoming.length
+    ? upcoming.map(ev => scheduleRowHTML(ev)).join('')
+    : `<div class="note">${membersReady ? '現在、カレンダーに今後の予定はありません。' : '読み込み中です…'}</div>`;
+  bindScheduleRows_(list);
+
+  // ホーム画面側の直近5件にもクリックを効かせる
+  const homeList = document.getElementById('homeSchedule');
+  if(homeList) bindScheduleRows_(homeList);
+}
+
+function openScheduleDetail(eventId){
+  const ev = scheduleEvents.find(e => e.id === eventId);
+  if(!ev) return;
+  showView('schedule');
+  document.getElementById('scheduleListWrap').style.display = 'none';
+  document.getElementById('scheduleDetailWrap').style.display = '';
+
+  const respondents = attendanceRecords.filter(a => a.eventId === eventId);
+  const memberOptions = members.slice().sort((a,b) => (a.kana||a.name).localeCompare(b.kana||b.name, 'ja'))
+    .map(m => `<option value="${attrSafe_(m.name)}">${m.name}</option>`).join('');
+
+  document.getElementById('scheduleDetailBody').innerHTML = `
+    <div class="card" style="padding:20px; margin-bottom:16px;">
+      <div class="section-title" style="font-size:16px;">${ev.title}</div>
+      <div class="section-sub">${[ev.date, ev.time, ev.place].filter(Boolean).join(' ／ ')}</div>
+      ${requiresApplicationLink_(ev) ? `<a class="btn primary" style="display:inline-block; margin-top:12px; text-decoration:none;" href="${ev.url}" target="_blank" rel="noopener noreferrer">申し込みページを開く（新しいウィンドウ）</a>` : ''}
+    </div>
+
+    <div class="grid cols-2" style="align-items:start;">
+      <div class="card" style="padding:20px;">
+        <div class="section-title" style="font-size:14px;">出欠を回答する</div>
+        <div class="section-sub">すでに回答済みの方が選び直すと、回答を修正できます。</div>
+        <form id="eventAttendanceForm">
+          <div class="form-grid">
+            <div class="field full">
+              <label for="evAttMember">お名前</label>
+              <select id="evAttMember" required onchange="onEventAttMemberChange_('${attrSafe_(eventId)}')">
+                <option value="">選択してください</option>
+                ${memberOptions}
+              </select>
+            </div>
+            <div class="field full">
+              <label>出欠</label>
+              <div class="radio-group">
+                <label><input type="radio" name="evAttStatus" value="出席" checked> 出席</label>
+                <label><input type="radio" name="evAttStatus" value="欠席"> 欠席</label>
+              </div>
+            </div>
+            <div class="field full" id="evAttCurrentNote"></div>
+          </div>
+          <button class="btn primary" type="submit" style="margin-top:14px;">回答を送信</button>
+        </form>
+      </div>
+      <div class="card" style="padding:20px;">
+        <div class="section-title" style="font-size:14px;">回答状況（${respondents.length}名）</div>
+        <div id="eventAttendanceList">${eventAttendanceListHTML_(respondents)}</div>
+      </div>
+    </div>
+  `;
+
+  // タイトルや日付に引用符などが含まれていても壊れないよう、
+  // フォームの送信イベントはHTML文字列に埋め込まず、ここで直接バインドします。
+  document.getElementById('eventAttendanceForm').onsubmit = (evt) => submitEventAttendance(evt, eventId);
+}
+
+// 名前を選ぶと、その人がすでに回答済みかどうかをその場で知らせる（修正のヒント）
+function onEventAttMemberChange_(eventId){
+  const name = document.getElementById('evAttMember').value;
+  const note = document.getElementById('evAttCurrentNote');
+  if(!note) return;
+  const existing = attendanceRecords.find(a => a.eventId === eventId && a.name === name);
+  note.innerHTML = existing ? `<div class="note">現在の回答：${existing.status}（送信し直すと上書きされます）</div>` : '';
+}
+
+function eventAttendanceListHTML_(rows){
+  if(!rows.length) return `<div class="note">まだ回答はありません。</div>`;
+  return `<table class="plain"><tbody>${rows.map(r => `
+    <tr><td>${r.name}</td><td>${statusTag(r.status)}</td></tr>
+  `).join('')}</tbody></table>`;
+}
+
+function closeScheduleDetail(){
+  document.getElementById('scheduleDetailWrap').style.display = 'none';
+  document.getElementById('scheduleListWrap').style.display = '';
+}
+
+function submitEventAttendance(event, eventId){
+  event.preventDefault();
+  const ev = scheduleEvents.find(e => e.id === eventId);
+  const name = document.getElementById('evAttMember').value;
+  const status = document.querySelector('input[name="evAttStatus"]:checked').value;
+  if(!name){ toast('お名前を選択してください'); return false; }
+
+  const btn = event.target.querySelector('button[type="submit"]');
+  if(btn){ btn.disabled = true; btn.textContent = '送信中…'; }
+
+  fetch(MEMBER_API_URL, {
+    method: 'POST',
+    mode: 'no-cors', // GAS側のCORS制約を避けるため。応答内容は読み取れませんが送信自体は行われます。
+    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+    body: JSON.stringify({
+      action: 'attendance',
+      eventId: eventId,
+      eventDate: ev ? ev.date : '',
+      eventTitle: ev ? ev.title : '',
+      name: name,
+      status: status,
+    }),
+  }).then(() => {
+    const existing = attendanceRecords.find(a => a.eventId === eventId && a.name === name);
+    if(existing){ existing.status = status; }
+    else{ attendanceRecords.push({ eventId: eventId, eventDate: ev ? ev.date : '', eventTitle: ev ? ev.title : '', name: name, status: status }); }
+    document.getElementById('eventAttendanceList').innerHTML =
+      eventAttendanceListHTML_(attendanceRecords.filter(a => a.eventId === eventId));
+    onEventAttMemberChange_(eventId);
+    toast('回答を送信しました');
+    if(btn){ btn.disabled = false; btn.textContent = '回答を送信'; }
+  }).catch(() => {
+    toast('送信に失敗しました。通信環境をご確認のうえ、もう一度お試しください。');
+    if(btn){ btn.disabled = false; btn.textContent = '回答を送信'; }
+  });
+
+  return false;
+}
+
+/* =========================================================
+   VISITOR REGISTER（ビジター登録フォーム）
+   ---------------------------------------------------------
+   メールアドレス・電話番号（ビジターご本人・招待者とも）以外の項目は、
+   ホームの「今週のビジター情報」にそのまま表示されます。
+   ========================================================= */
+function submitVisitorRegister(event){
+  event.preventDefault();
+  const week = document.getElementById('vfWeek').value;
+  const name = document.getElementById('vfName').value.trim();
+  if(!week || !name){ toast('参加する定例会日とお名前は必須です'); return false; }
+
+  const payload = {
+    action:        'visitorRegister',
+    week:          week,
+    name:          name,
+    isProxy:       document.getElementById('vfIsProxy').checked,
+    kana:          document.getElementById('vfKana').value.trim(),
+    company:       document.getElementById('vfCompany').value.trim(),
+    companyKana:   document.getElementById('vfCompanyKana').value.trim(),
+    email:         document.getElementById('vfEmail').value.trim(),
+    specialty:     document.getElementById('vfSpecialty').value.trim(),
+    wantCategory:  document.getElementById('vfWantCategory').value.trim(),
+    phone:         document.getElementById('vfPhone').value.trim(),
+    inviter:       document.getElementById('vfInviter').value.trim(),
+    inviterEmail:  document.getElementById('vfInviterEmail').value.trim(),
+    intention:     document.getElementById('vfIntention').value,
+    wantToMeet:    document.getElementById('vfWantToMeet').value.trim(),
+    relationship:  document.getElementById('vfRelationship').value.trim(),
+    note:          document.getElementById('vfNote').value.trim(),
+  };
+
+  const form = event.target;
+  const btn = form.querySelector('button[type="submit"]');
+  if(btn){ btn.disabled = true; btn.textContent = '送信中…'; }
+
+  fetch(MEMBER_API_URL, {
+    method: 'POST',
+    mode: 'no-cors', // GAS側のCORS制約を避けるため。応答内容は読み取れませんが送信自体は行われます。
+    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+    body: JSON.stringify(payload),
+  }).then(() => {
+    // 楽観的に、公開してよい項目（メールアドレス・電話番号以外）をその場でvisitors配列にも反映しておきます
+    visitors.push({
+      week: payload.week,
+      name: payload.name,
+      isProxy: payload.isProxy,
+      kana: payload.kana,
+      company: payload.company,
+      companyKana: payload.companyKana,
+      category: '',
+      specialty: payload.specialty,
+      wantCategory: payload.wantCategory,
+      referrer: payload.inviter,
+      intention: payload.intention,
+      wantToMeet: payload.wantToMeet,
+      relationship: payload.relationship,
+      note: payload.note,
+    });
+    renderHome();
+    toast('ビジター情報を登録しました');
+    form.reset();
+  }).catch(() => {
+    toast('送信に失敗しました。通信環境をご確認のうえ、もう一度お試しください。');
+  }).finally(() => {
+    if(btn){ btn.disabled = false; btn.textContent = '登録する'; }
+  });
+
+  return false;
+}
+
+/* =========================================================
+   RENDER: PASSPORT PROGRAM（パスポートプログラム進捗）
+   一覧 → 個人詳細（メンター/新メンバーがサイト上で完了操作できる）
+   ========================================================= */
+function todayStr_(){
+  const d = new Date();
+  const pad = n => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+}
+
+function passportRowHTML_(p){
+  const total = passportTotal_();
+  const done = passportDoneCount_(p);
+  const pct = total ? Math.round(done / total * 100) : 0;
+  return `
+    <div class="card doc-row passport-row" data-name="${attrSafe_(p.name)}" style="cursor:pointer; margin-bottom:10px;">
+      <div style="min-width:0;">
+        <p class="name">${p.name}</p>
+        <div class="meta">${[p.team, p.overallMentor ? '全体メンター：'+p.overallMentor : '', p.personalMentor ? 'パーソナルメンター：'+p.personalMentor : ''].filter(Boolean).join(' ／ ')}</div>
+      </div>
+      <div class="spacer"></div>
+      <div style="text-align:right; min-width:90px;">
+        <div style="font-weight:800; font-size:16px;">${done}/${total}</div>
+        <div class="progress" style="margin-top:4px;"><div style="width:${pct}%"></div></div>
+      </div>
+    </div>`;
+}
+
+function bindPassportRows_(container){
+  container.querySelectorAll('.passport-row').forEach(row => {
+    row.onclick = () => openPassportDetail(row.dataset.name);
+  });
+}
+
+function renderPassport(){
+  const list = document.getElementById('passportList');
+  if(!list) return;
+
+  const sub = document.getElementById('passportSub');
+  if(sub) sub.textContent = `新メンバーの1to1メンタリング進捗です（全${passportTotal_()}項目）。名前をクリックすると詳細画面へ移動します。`;
+
+  if(!passportProgress.length){
+    list.innerHTML = `<div class="note">${membersReady ? 'パスポートプログラムの進捗はまだ登録されていません。' : '読み込み中です…'}</div>`;
+    return;
+  }
+
+  list.innerHTML = passportProgress.map(p => passportRowHTML_(p)).join('');
+  bindPassportRows_(list);
+}
+
+function openPassportDetail(name){
+  const p = passportProgress.find(x => x.name === name);
+  if(!p) return;
+  showView('passport');
+  document.getElementById('passportListWrap').style.display = 'none';
+  document.getElementById('passportDetailWrap').style.display = '';
+
+  const total = passportTotal_();
+  const done = passportDoneCount_(p);
+  const pct = total ? Math.round(done / total * 100) : 0;
+
+  const rows = passportItems.map((it, idx) => {
+    const doneDate = p.items && p.items[it.id];
+    return `
+      <tr>
+        <td>${it.name || it.id}</td>
+        <td style="color:var(--ink-muted); font-size:12px;">${it.mentor || ''}</td>
+        <td>${doneDate ? `<span class="tag status-good">${doneDate}</span>` : `<span class="tag status-neutral">未実施</span>`}</td>
+        <td style="text-align:right;"><button class="btn passport-toggle-btn" type="button" data-idx="${idx}">${doneDate ? '取り消す' : '終了'}</button></td>
+      </tr>`;
+  }).join('');
+
+  document.getElementById('passportDetailBody').innerHTML = `
+    <div class="card" style="padding:20px; margin-bottom:16px;">
+      <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
+        <div>
+          <div class="section-title" style="font-size:16px; margin:0;">${p.name}</div>
+          <div class="section-sub" style="margin:2px 0 0;">${[p.team, p.overallMentor ? '全体メンター：'+p.overallMentor : '', p.personalMentor ? 'パーソナルメンター：'+p.personalMentor : ''].filter(Boolean).join(' ／ ')}</div>
+        </div>
+        <div style="text-align:right;">
+          <div style="font-weight:800; font-size:18px;">${done}/${total}</div>
+          <div style="font-size:11.5px; color:var(--ink-muted);">完了</div>
+        </div>
+      </div>
+      <div class="progress" style="margin-top:12px;"><div style="width:${pct}%"></div></div>
+    </div>
+    <div class="card" style="padding:20px;">
+      <div class="section-sub" style="margin-bottom:10px;">各項目の担当メンターが1to1・MSP受講などを終えたら「終了」ボタンを押してください。押し間違えた場合は「取り消す」でいつでも戻せます。</div>
+      <table class="plain"><tbody id="passportItemRows">${rows}</tbody></table>
+    </div>
+  `;
+
+  // 項目名やメンター名に引用符などが含まれていても壊れないよう、
+  // ボタンのクリック処理はHTML文字列に埋め込まず、ここで直接バインドします。
+  document.querySelectorAll('#passportItemRows .passport-toggle-btn').forEach(btn => {
+    const idx = Number(btn.dataset.idx);
+    const it = passportItems[idx];
+    if(!it) return;
+    const alreadyDone = !!(p.items && p.items[it.id]);
+    btn.onclick = () => togglePassportItem(p.name, it.id, !alreadyDone);
+  });
+}
+
+function closePassportDetail(){
+  document.getElementById('passportDetailWrap').style.display = 'none';
+  document.getElementById('passportListWrap').style.display = '';
+}
+
+function togglePassportItem(name, itemId, done){
+  const p = passportProgress.find(x => x.name === name);
+  if(!p) return;
+
+  fetch(MEMBER_API_URL, {
+    method: 'POST',
+    mode: 'no-cors', // GAS側のCORS制約を避けるため。応答内容は読み取れませんが送信自体は行われます。
+    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+    body: JSON.stringify({ action: 'passportUpdate', name: name, itemId: itemId, done: done }),
+  }).then(() => {
+    if(!p.items) p.items = {};
+    if(done){ p.items[itemId] = todayStr_(); }
+    else{ delete p.items[itemId]; }
+    toast(done ? '完了にしました' : '未実施に戻しました');
+    openPassportDetail(name);
+    renderPassport();
+    updateNavCounts();
+  }).catch(() => {
+    toast('送信に失敗しました。通信環境をご確認のうえ、もう一度お試しください。');
+  });
+}
+
+/* =========================================================
+   RENDER: MEMBERS（メンバー一覧そのものはindex.html側に分離済み。
+   このページでは、下のmemberCardHTML_だけを「メインプレゼンター」等の
+   ポップアップ表示用に再利用しています）
+   ========================================================= */
+// 自己紹介など、改行を含む可能性がある自由記述のテキストを安全に表示するためのエスケープです。
+function escapeHtmlKeepBreaks_(s){
+  return String(s || '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/\r\n|\r|\n/g, '<br>');
+}
+
+// 業種カテゴリー別ページ（添付の名刺風フォーマット）に合わせたメンバーカードです。
+// キャッチコピー・協業カテゴリー・クライアントは、会員マスターに同名の列を追加すると表示されます
+// （列が無い・空欄の場合は、その行だけ自然に非表示になります）。
+function memberCardHTML_(m){
+  return `
+    <div class="card member-card-v2">
+      ${m.catchphrase ? `<div class="mc-catch">${escapeHtmlKeepBreaks_(m.catchphrase)}</div>` : ''}
+      <div class="mc-top">
+        <div class="mc-nameblock">
+          <div class="mc-name-row">
+            ${m.id !== undefined && m.id !== '' ? `<span class="mc-no">No.${m.id}</span>` : ''}
+            <span class="mc-name-ja">${m.name}</span>
+          </div>
+          ${m.kana ? `<div class="mc-name-en">${m.kana}</div>` : ''}
+        </div>
+        <div class="mc-photo">${avatarHTML(m.id, 64)}</div>
+      </div>
+      ${m.company ? `<div class="mc-company">${m.company}</div>` : ''}
+      ${m.bio ? `<p class="mc-bio">${escapeHtmlKeepBreaks_(m.bio)}</p>` : ''}
+      <div class="mc-meta">
+        ${m.category ? `<div class="badge-row"><span class="badge-label">ビジネスカテゴリー</span><span class="cat-chip">${m.category}</span></div>` : ''}
+        ${m.collabCategory ? `<div class="badge-row"><span class="badge-label">協業カテゴリー</span><span class="cat-chip">${m.collabCategory}</span></div>` : ''}
+        ${m.clientProfile ? `<div class="badge-row"><span class="badge-label">クライアント</span><span class="cat-chip">${m.clientProfile}</span></div>` : ''}
+      </div>
+      ${m.website ? `<div class="mc-hp"><a class="member-hp-link" href="${m.website}" target="_blank" rel="noopener noreferrer">🌐 ホームページを見る</a></div>` : ''}
+    </div>`;
+}
+
+/* =========================================================
+   RENDER: ROTATION
+   ========================================================= */
+function rotationPersonCellHTML_(name, topic){
+  if(!name) return `<span style="color:var(--ink-soft);">—</span>`;
+  const m = memberByName_(name);
+  // 会員マスターに同じ氏名が見つからない場合も、空白ではなく仮アイコンを出す
+  // （原因の多くは、スピーカーローテーション側の氏名の表記ゆれ・誤字・空白）
+  const avatar = m ? avatarHTML(m.id, 34)
+    : `<div class="avatar" style="width:34px;height:34px;font-size:12px;background:var(--surface-alt);color:var(--ink-muted);" title="会員マスターに同名の登録が見つかりません">${name.slice(0,2)}</div>`;
+  return `
+    <div class="row-person">${avatar}<span>${name}</span></div>
+    ${topic ? `<div style="font-size:11.5px; color:var(--ink-muted); margin-top:2px;">${topic}</div>` : ''}
+  `;
+}
+
+function renderRotation(){
+  const body = document.getElementById('rotationBody');
+  if(!speakerRotation.length){
+    body.innerHTML = `<tr><td colspan="4" class="note">まだ登録されていません。「スピーカーローテーション」シートに行を追加してください。</td></tr>`;
+    return;
+  }
+  const currentKey = currentRotationWeekKey_();
+  body.innerHTML = speakerRotation.map(r => {
+    const d = parseYmd_(r.week);
+    const isThisWeek = currentKey !== null && d && d.getTime() === currentKey;
+    return `<tr style="${isThisWeek ? 'background:var(--surface-alt);' : ''}">
+      <td>${r.week}${isThisWeek ? ' <span class="tag status-good">今週</span>' : ''}</td>
+      <td>${rotationPersonCellHTML_(r.presenter1, r.topic1)}</td>
+      <td>${rotationPersonCellHTML_(r.presenter2, r.topic2)}</td>
+      <td>${r.eighty || '<span style="color:var(--ink-soft);">—</span>'}</td>
+    </tr>`;
+  }).join('');
+}
+
+/* =========================================================
+   RENDER: EDUCATION
+   ========================================================= */
+function renderEducation(){
+  const list = document.getElementById('educationList');
+  if(!list) return;
+
+  if(!membersReady){
+    list.innerHTML = `<div class="note">読み込み中です…</div>`;
+    return;
+  }
+  if(!education.length){
+    list.innerHTML = `<div class="note">エデュケーションはまだ登録されていません。「エデュケーション」シートに行を追加し、「公開フラグ」にチェックを入れてください。</div>`;
+    return;
+  }
+
+  const sorted = education.slice().sort((a, b) => (a.week < b.week ? -1 : a.week > b.week ? 1 : 0));
+  list.innerHTML = sorted.map(ed => {
+    const m = memberByName_(ed.presenterName);
+    const avatar = m
+      ? avatarHTML(m.id, 48)
+      : `<div class="avatar" style="width:48px;height:48px;font-size:15px;background:var(--surface-alt);color:var(--ink-muted);">${(ed.presenterName || '').slice(0,2)}</div>`;
+    const podcastBtn = ed.podcastUrl
+      ? `<a class="btn" href="${ed.podcastUrl}" target="_blank" rel="noopener noreferrer">🎧 Podcastを聴く</a>`
+      : '';
+    return `
+    <div class="doc-row">
+      ${avatar}
+      <div>
+        <p class="name">${ed.theme || '（テーマ未設定）'}</p>
+        <div class="meta">${[ed.week, ed.presenterName, ed.category].filter(Boolean).join(' ・ ')}</div>
+      </div>
+      <div class="spacer"></div>
+      ${podcastBtn}
+    </div>`;
+  }).join('');
+}
+
+/* =========================================================
+   RENDER: DOCS
+   ========================================================= */
+function renderDocs(){
+  const sel = document.getElementById('docFilter');
+  const list = document.getElementById('docList');
+
+  if(!membersReady){
+    list.innerHTML = `<div class="note">読み込み中です…</div>`;
+    return;
+  }
+  if(!documents.length){
+    list.innerHTML = `<div class="note">資料はまだ登録されていません。「資料室」シートに行を追加してください。</div>`;
+    return;
+  }
+
+  // カテゴリの選択肢は、データが揃ったタイミングで一度だけ作り直す
+  const existing = new Set([...sel.options].map(o => o.value).filter(Boolean));
+  const categories = [...new Set(documents.map(d => d.category).filter(Boolean))];
+  if(categories.some(c => !existing.has(c))){
+    sel.innerHTML = '<option value="">すべてのカテゴリ</option>';
+    categories.forEach(c => {
+      const o = document.createElement('option'); o.value=c; o.textContent=c; sel.appendChild(o);
+    });
+  }
+
+  const filter = sel.value;
+  list.innerHTML = documents.filter(d => !filter || d.category===filter).map(d => {
+    const iconLabel = d.type ? d.type.slice(0,3).toUpperCase() : '資料';
+    const openBtn = d.url
+      ? `<a class="btn" href="${d.url}" target="_blank" rel="noopener noreferrer">資料を開く</a>`
+      : `<button class="btn" disabled title="URLが未設定です">資料を開く</button>`;
+    return `
+    <div class="doc-row">
+      <div class="doc-icon">${iconLabel}</div>
+      <div>
+        <p class="name">${d.name}</p>
+        <div class="meta">${[d.category, d.updated ? '更新日 '+d.updated : ''].filter(Boolean).join(' ・ ')}</div>
+      </div>
+      <div class="spacer"></div>
+      ${openBtn}
+    </div>`;
+  }).join('');
+}
+
+/* =========================================================
+   RENDER: TASKS
+   ========================================================= */
+function renderTasks(){
+  const wrap = document.getElementById('taskBoards');
+  wrap.innerHTML = '';
+  Object.entries(TEAM_META).forEach(([key, t]) => {
+    const tasks = teamTasks[key];
+    const done = tasks.filter(x=>x.status==='完了').length;
+    const pct = Math.round(done/tasks.length*100);
+    const cols = { '未着手':[], '進行中':[], '完了':[] };
+    tasks.forEach(task => cols[task.status].push(task));
+
+    const section = document.createElement('div');
+    section.className = 'card';
+    section.style.padding = '18px';
+    section.style.marginBottom = '16px';
+    section.style.borderTop = `4px solid ${t.color}`;
+    section.innerHTML = `
+      <div class="head" style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;">
+        <div>
+          <h3 style="margin:0;font-size:15.5px;">${t.label}</h3>
+          <div class="note" style="margin-top:2px;">${done}/${tasks.length} タスク完了</div>
+        </div>
+        <div style="min-width:160px;flex:0 0 auto;">
+          <div class="progress" style="--c:${t.color}"><div style="width:${pct}%"></div></div>
+          <div class="progress-label"><span></span><span>${pct}%</span></div>
+        </div>
+      </div>
+      <div class="kanban">
+        ${['未着手','進行中','完了'].map(colName => `
+          <div class="kanban-col">
+            <h4><span>${colName}</span><span>${cols[colName].length}</span></h4>
+            ${cols[colName].map(task => `
+              <div class="task-card">
+                <p class="t">${task.title}</p>
+                <div class="foot">
+                  <span>${memberById(task.assigneeId)?.name || ''}</span>
+                  <span>期限 ${task.due}</span>
+                </div>
+              </div>
+            `).join('') || '<div class="note" style="margin:0;">なし</div>'}
+          </div>
+        `).join('')}
+      </div>
+    `;
+    wrap.appendChild(section);
+  });
+}
+
+/* =========================================================
+   RENDER: TEAMS
+   ========================================================= */
+function renderTeams(){
+  const grid = document.getElementById('teamGrid');
+  grid.innerHTML = '';
+
+  // 会員マスターの「委員会」を見て、実際にメンバーがいるチームだけをカード表示します。
+  // 未設定（空欄・"none"）のメンバーはチーム紹介には出しません。
+  const { groups, order } = computeTeamGroups_();
+
+  if(!order.length){
+    grid.innerHTML = `<div class="note">${membersReady ? '会員マスターの「所属チーム」が設定されているメンバーはまだいません。' : '読み込み中です…'}</div>`;
+    return;
+  }
+
+  let autoIdx = 0;
+  order.forEach(key => {
+    const g = groups[key];
+    if(!g.color) g.color = TEAM_AUTO_PALETTE[autoIdx++ % TEAM_AUTO_PALETTE.length];
+    // リーダー（役職に「リーダー」「委員長」「会長」を含む人）→副リーダー（「副リーダー」等）→それ以外、の順に並べます。
+    const roster = g.roster.slice().sort((a, b) => leaderRank_(a.role) - leaderRank_(b.role));
+    const div = document.createElement('div');
+    div.className = 'card team-card';
+    div.style.setProperty('--c', g.color);
+    div.innerHTML = `
+      <div class="head">
+        <div>
+          <h3>${g.label}</h3>
+          <p class="lead">${g.roster.length}名${g.cadence ? ' ・ '+g.cadence : ''}</p>
+        </div>
+      </div>
+      ${g.desc ? `<p class="desc">${g.desc}</p>` : ''}
+      <div class="chip-row">
+        ${roster.map(m => {
+          const badge = isLeaderRole_(m.role)
+            ? `<span class="tag status-good" style="margin-left:5px; padding:1px 6px; font-size:9.5px; vertical-align:middle;">リーダー</span>`
+            : isSubLeaderRole_(m.role)
+              ? `<span class="tag status-warn" style="margin-left:5px; padding:1px 6px; font-size:9.5px; vertical-align:middle;">副リーダー</span>`
+              : '';
+          return `<span class="member-chip">${m.name}${badge}（${m.category}）</span>`;
+        }).join('')}
+      </div>
+    `;
+    grid.appendChild(div);
+  });
+}
+
+/* =========================================================
+   RENDER: MASTER (editable — single source of truth)
+   ========================================================= */
+function renderMaster(){
+  const body = document.getElementById('masterBody');
+  body.innerHTML = members.map(m => `
+    <tr>
+      <td><input type="text" value="${m.name}" oninput="updateMember(${m.id}, 'name', this.value)"></td>
+      <td><input type="text" value="${m.category}" oninput="updateMember(${m.id}, 'category', this.value)"></td>
+      <td><input type="text" value="${m.company}" oninput="updateMember(${m.id}, 'company', this.value)"></td>
+      <td>
+        <select onchange="updateMember(${m.id}, 'team', this.value)">
+          <option value="none" ${m.team==='none'?'selected':''}>一般会員</option>
+          ${Object.entries(TEAM_META).map(([k,t]) => `<option value="${k}" ${m.team===k?'selected':''}>${t.label}</option>`).join('')}
+        </select>
+      </td>
+      <td><input type="text" value="${m.role}" oninput="updateMember(${m.id}, 'role', this.value)"></td>
+    </tr>
+  `).join('');
+}
+
+function updateMember(id, field, value){
+  const m = memberById(id);
+  if(!m) return;
+  m[field] = value;
+  // マスターを更新すると、他の全ページへ即時反映される（実運用ではスプレッドシート連携に相当）
+  // ※メンバー一覧そのものはindex.html（別ファイル）に分離したため、ここでは更新できません。
+  renderRotation();
+  renderTeams();
+  renderHome();
+  toast('マスターデータを更新しました → 各ページに反映されました');
+}
+
+/* =========================================================
+   会員マスターAPI（GAS）からの読み込み
+   ========================================================= */
+function setDataSourceBadge(state){
+  const el = document.getElementById('dataSourceBadge');
+  if(!el) return;
+  if(state === 'live'){
+    el.textContent = 'マスターと連動中';
+    el.className = 'tag status-good';
+  } else if(state === 'loading'){
+    el.textContent = 'マスターから取得中…';
+    el.className = 'tag status-warn';
+  } else if(state === 'error'){
+    el.textContent = 'マスターに接続できず、サンプルデータを表示中';
+    el.className = 'tag status-critical';
+  } else {
+    el.textContent = 'サンプルデータを表示中';
+    el.className = 'tag status-neutral';
+  }
+}
+
+function applyMembersFromAPI(payload){
+  if(!payload || !Array.isArray(payload.members) || !payload.members.length) return false;
+  membersReady = true;
+  members = payload.members.map(m => ({
+    id: m.id,
+    name: m.name,
+    kana: m.kana || '',
+    category: m.category || '',
+    categoryGroup: m.categoryGroup || '',
+    company: m.company || '',
+    role: m.role || '',
+    team: m.team || 'none',
+    photoUrl: m.photoUrl || '',
+    photoPosition: m.photoPosition || '',
+    photoZoom: m.photoZoom || '',
+    website: m.website || '',
+    gender: m.gender || '',
+    bio: m.bio || '',
+    catchphrase: m.catchphrase || '',
+    collabCategory: m.collabCategory || '',
+    clientProfile: m.clientProfile || '',
+    joinDate: m.joinDate || '',
+  }));
+
+  speakerRotation = Array.isArray(payload.rotation) ? payload.rotation.map(r => ({
+    week: r.week || '',
+    presenter1: r.presenter1 || '',
+    topic1: r.topic1 || '',
+    presenter2: r.presenter2 || '',
+    topic2: r.topic2 || '',
+    eighty: r.eighty || '',
+  })) : [];
+
+  visitors = Array.isArray(payload.visitors) ? payload.visitors.map(v => ({
+    week: v.week || '',
+    name: v.name || '',
+    isProxy: !!v.isProxy,
+    kana: v.kana || '',
+    company: v.company || '',
+    companyKana: v.companyKana || '',
+    category: v.category || '',
+    specialty: v.specialty || '',
+    wantCategory: v.wantCategory || '',
+    referrer: v.referrer || '',
+    intention: v.intention || '',
+    wantToMeet: v.wantToMeet || '',
+    relationship: v.relationship || '',
+    note: v.note || '',
+  })) : [];
+
+  scheduleEvents = Array.isArray(payload.schedule) ? payload.schedule.map(s => ({
+    id: s.id || '',
+    title: s.title || '',
+    date: s.date || '',
+    time: s.time || '',
+    place: s.place || '',
+    url: s.url || '',
+    note: s.note || '',
+  })) : [];
+
+  passportItems = Array.isArray(payload.passportItems) ? payload.passportItems.map(p => ({
+    id: p.id || '',
+    name: p.name || '',
+    content: p.content || '',
+    mentor: p.mentor || '',
+  })) : [];
+
+  passportProgress = Array.isArray(payload.passportProgress) ? payload.passportProgress.map(p => ({
+    name: p.name || '',
+    team: p.team || '',
+    joinDate: p.joinDate || '',
+    deadline: p.deadline || '',
+    overallMentor: p.overallMentor || '',
+    personalMentor: p.personalMentor || '',
+    items: p.items || {},
+  })) : [];
+
+  attendanceRecords = Array.isArray(payload.attendance) ? payload.attendance.map(a => ({
+    eventId: a.eventId || '',
+    eventDate: a.eventDate || '',
+    eventTitle: a.eventTitle || '',
+    name: a.name || '',
+    status: a.status || '',
+  })) : [];
+
+  documents = Array.isArray(payload.documents) ? payload.documents.map(d => ({
+    name: d.name || '',
+    category: d.category || '',
+    type: d.type || '',
+    url: d.url || '',
+    updated: d.updated || '',
+  })) : [];
+
+  announcements = Array.isArray(payload.announcements) ? payload.announcements.map(a => ({
+    date: a.date || '',
+    title: a.title || '',
+    body: a.body || '',
+  })) : [];
+
+  education = Array.isArray(payload.education) ? payload.education.map(ed => ({
+    week: ed.week || '',
+    presenterName: ed.presenterName || '',
+    category: ed.category || '',
+    theme: ed.theme || '',
+    podcastUrl: ed.podcastUrl || '',
+  })) : [];
+
+  updateLastUpdatedFoot(payload.updatedAt);
+  renderAll();
+  setDataSourceBadge('live');
+  return true;
+}
+
+function loadMembersFromAPI(attempt){
+  attempt = attempt || 1;
+  if(!MEMBER_API_URL){
+    membersReady = true;
+    renderAll();
+    setDataSourceBadge('default');
+    return;
+  }
+  setDataSourceBadge('loading');
+
+  // Googleのサーバーが少し眠っている状態（しばらくアクセスがなかった直後など）だと、
+  // 最初の応答だけ時間がかかることがあります。1回目がタイムアウトしても、
+  // 2回目でまず間違いなくすぐ返ってくるので、自動でもう一度だけ試してから
+  // 「接続できず」の表示にします。
+  const MAX_ATTEMPTS = 2;
+  let settled = false;
+  const timeoutId = setTimeout(() => {
+    if(settled) return;
+    settled = true;
+    if(attempt < MAX_ATTEMPTS){
+      loadMembersFromAPI(attempt + 1);
+    } else {
+      membersReady = true;
+      renderAll();
+      setDataSourceBadge('error');
+    }
+  }, 10000);
+
+  // script.google.com の /exec はCORSが効かない環境があるため、
+  // JSONP（callbackパラメータでの読み込み）を使い、fetchの成否に依存しない形にしています。
+  const callbackName = '__bniMembersCallback_' + Date.now() + '_' + attempt;
+  window[callbackName] = function(payload){
+    if(settled) return;
+    settled = true;
+    clearTimeout(timeoutId);
+    applyMembersFromAPI(payload);
+    delete window[callbackName];
+  };
+
+  const script = document.createElement('script');
+  script.src = MEMBER_API_URL + (MEMBER_API_URL.includes('?') ? '&' : '?') + 'callback=' + callbackName;
+  script.onerror = function(){
+    if(settled) return;
+    settled = true;
+    clearTimeout(timeoutId);
+    if(attempt < MAX_ATTEMPTS){
+      loadMembersFromAPI(attempt + 1);
+    } else {
+      membersReady = true;
+      renderAll();
+      setDataSourceBadge('error');
+    }
+  };
+  document.head.appendChild(script);
+}
+
+/* =========================================================
+   日付表示（トップバーの「今日の日付」・左下の「最終更新」）
+   ========================================================= */
+function formatJaDate_(d){
+  const w = ['日','月','火','水','木','金','土'][d.getDay()];
+  return `${d.getFullYear()}年${d.getMonth()+1}月${d.getDate()}日（${w}）`;
+}
+function renderTopMeta(){
+  const el = document.getElementById('viewMeta');
+  if(el) el.textContent = formatJaDate_(new Date());
+}
+function updateLastUpdatedFoot(iso){
+  const el = document.getElementById('lastUpdatedFoot');
+  if(!el) return;
+  const d = iso ? new Date(iso) : null;
+  if(!d || isNaN(d)){ el.textContent = '最終更新：—'; return; }
+  const pad = n => String(n).padStart(2, '0');
+  el.textContent = `最終更新：${d.getFullYear()}/${pad(d.getMonth()+1)}/${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+
+/* =========================================================
+   INIT
+   ========================================================= */
+function renderAll(){
+  renderTopMeta();
+  renderHome();
+  renderRotation();
+  renderEducation();
+  renderDocs();
+  renderSchedule();
+  renderPassport();
+  renderTasks();
+  renderTeams();
+  renderMaster();
+  updateNavCounts();
+}
+
+buildNav();
+renderAll();
+showView('home');
+loadMembersFromAPI();
+document.getElementById('visitorRegisterForm').onsubmit = submitVisitorRegister;
+</script>
+</body>
+</html>
