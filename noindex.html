@@ -17,7 +17,7 @@
   比べて、違っていた場合だけ静かに1回だけ読み込み直します（URLは変えません。LINEや
   Messenger等で共有した際に、リンクが長くなったり、表示が崩れたりしないようにするためです）。
 -->
-<script>window.__BNI_BUILD_ID__ = '2026-10-07-01';</script>
+<script>window.__BNI_BUILD_ID__ = '2026-10-11-01';</script>
 <script>
 (function(){
   try{
@@ -316,6 +316,10 @@
   .policy-list li{ margin-bottom:2px; }
   .policy-modal-box a{ word-break:break-all; }
 
+  /* ---------- プレゼンフィードバック ---------- */
+  .feedback-link{ font-size:11.5px; color:var(--accent); font-weight:700; text-decoration:none; }
+  .feedback-link:hover{ text-decoration:underline; }
+
   /* ---------- team / task board ---------- */
   .team-card{ padding:18px; border-top:4px solid var(--c,var(--accent)); }
   .team-card .head{ display:flex; justify-content:space-between; align-items:flex-start; gap:10px; margin-bottom:10px; }
@@ -558,6 +562,58 @@
           </table>
         </div>
         <p class="note">※ 「スピーカーローテーション」シートに行を追加すると、ここと、該当週にはホーム画面にも自動反映されます。</p>
+      </section>
+
+      <!-- ---------- PRESENTER FEEDBACK ---------- -->
+      <section class="view" id="view-feedback">
+        <div class="section-title">プレゼンフィードバック</div>
+        <div class="section-sub">メインプレゼンへの感想を送ったり、みんなのフィードバックを見ることができます。対象は今週に限らず、過去のスピーカーローテーションの記録からも選べます。</div>
+
+        <div class="grid cols-2" style="align-items:start;">
+          <div class="card" style="padding:20px;">
+            <div class="section-title" style="font-size:14px;">フィードバックを送る</div>
+            <div class="section-sub">すでに同じ対象へ回答済みの場合、送り直すと内容が上書きされます。</div>
+            <form id="feedbackForm">
+              <div class="form-grid">
+                <div class="field full">
+                  <label for="fbTarget">対象（週・プレゼンター）</label>
+                  <select id="fbTarget" required>
+                    <option value="">選択してください</option>
+                  </select>
+                </div>
+                <div class="field full">
+                  <label for="fbRespondent">お名前</label>
+                  <select id="fbRespondent" required>
+                    <option value="">選択してください</option>
+                  </select>
+                </div>
+                <div id="feedbackRatingFields"></div>
+                <div class="field full">
+                  <label for="fbImpression">印象に残ったこと</label>
+                  <textarea id="fbImpression" rows="2"></textarea>
+                </div>
+                <div class="field full">
+                  <label for="fbAdvice">改善アドバイス</label>
+                  <textarea id="fbAdvice" rows="2"></textarea>
+                </div>
+                <div class="field full">
+                  <label for="fbFuture">今後の紹介・ビジネス展開への期待</label>
+                  <textarea id="fbFuture" rows="2"></textarea>
+                </div>
+              </div>
+              <button class="btn primary" type="submit" style="margin-top:14px;">フィードバックを送信</button>
+            </form>
+          </div>
+          <div class="card" style="padding:20px;">
+            <div class="section-title" style="font-size:14px;">みんなのフィードバック</div>
+            <div class="toolbar" style="margin-bottom:10px;">
+              <select id="fbFilter" onchange="renderFeedbackResults_()">
+                <option value="">すべての対象</option>
+              </select>
+            </div>
+            <div id="feedbackResultsList"></div>
+          </div>
+        </div>
       </section>
 
       <!-- ---------- EDUCATION ---------- -->
@@ -1054,6 +1110,7 @@ let attendanceRecords = []; // 出欠管理（スケジュールへの回答一�
 let documents         = []; // 資料室（マスターの「資料室」シートで管理）
 let announcements     = []; // お知らせ（会員マスターと同じスプレッドシートの「お知らせ」タブで管理）
 let education         = []; // エデュケーション（会員マスターと同じスプレッドシートの「エデュケーション」タブで管理）
+let presenterFeedback = []; // プレゼンフィードバック（会員マスターと同じスプレッドシートの「プレゼンフィードバック」タブで管理。サイトからも書き込み）
 
 // ↓ ここから下は、他タブ（タスク進捗など）のデモ表示用サンプルデータです
 const teamTasks = {
@@ -1166,6 +1223,7 @@ const VIEWS = [
   { id:'home',       label:'ホーム' },
   { id:'members',    label:'メンバー一覧',       count:()=>members.length, href:'index.html' },
   { id:'rotation',   label:'スピーカーローテーション', count:()=>speakerRotation.length },
+  { id:'feedback',   label:'プレゼンフィードバック', count:()=>presenterFeedback.length },
   { id:'education',  label:'エデュケーション',    count:()=>education.length },
   { id:'docs',       label:'資料室',             count:()=>documents.length },
   { id:'schedule',   label:'スケジュール',       count:()=>scheduleEvents.length },
@@ -1384,10 +1442,11 @@ function renderHome(){
   // ---- 新メンバー紹介（パスポート進捗シートより） ----
   const newMembersGrid = document.getElementById('homeNewMembers');
   const nm = passportNewMemberList();
+  // カードをタップすると、そのままパスポートプログラムの詳細画面へ移動します。
   newMembersGrid.innerHTML = nm.length ? nm.map(p => {
     const m = memberByName_(p.name);
     return `
-    <div class="card" style="padding:16px; display:flex; gap:12px; align-items:center;">
+    <div class="card" style="padding:16px; display:flex; gap:12px; align-items:center; cursor:pointer;" onclick="openPassportDetail('${attrSafe_(p.name)}')">
       ${m ? avatarHTML(m.id, 56) : `<div class="avatar" style="width:56px;height:56px;font-size:18px;background:var(--surface-alt);color:var(--ink-muted);">${p.name.slice(0,2)}</div>`}
       <div style="min-width:0;">
         <div style="font-weight:700; font-size:14.5px;">${p.name}</div>
@@ -1412,6 +1471,7 @@ function renderHome(){
           <div style="min-width:0;">
             <div style="font-weight:700; font-size:14px;">${name}</div>
             ${topic ? `<div style="font-size:12px; color:var(--ink-muted); overflow-wrap:anywhere;">カテゴリー：${topic}</div>` : ''}
+            <a class="feedback-link" href="#" onclick="event.stopPropagation(); goToFeedback_('${attrSafe_(rot.week||'')}','${attrSafe_(name)}'); return false;">📋 フィードバックを送る</a>
           </div>
         </div>`;
     };
@@ -1590,6 +1650,185 @@ function submitEventAttendance(event, eventId){
   }).catch(() => {
     toast('送信に失敗しました。通信環境をご確認のうえ、もう一度お試しください。');
     if(btn){ btn.disabled = false; btn.textContent = '回答を送信'; }
+  });
+
+  return false;
+}
+
+/* =========================================================
+   RENDER: プレゼンフィードバック
+   ---------------------------------------------------------
+   対象（週・プレゼンター）は、スピーカーローテーションの履歴（メインプレゼン1・2）
+   から自動的に候補を作ります。week + '||' + name を内部キーとして使っています。
+   ========================================================= */
+const FEEDBACK_RATING_OPTIONS = ['とても良かった', '良かった', '普通', '改善が必要', '物足りなかった'];
+const FEEDBACK_RATING_FIELDS = [
+  { key: 'tone',     label: '声のトーン' },
+  { key: 'prep',     label: '準備' },
+  { key: 'referral', label: '欲しいリファーラルの明確さ' },
+  { key: 'slides',   label: 'スライドの見やすさ' },
+  { key: 'overall',  label: 'プレゼン全体評価' },
+  { key: 'passion',  label: 'プレゼンターの情熱' },
+];
+
+function ratingRadioHTML_(field){
+  return `
+    <div class="field full">
+      <label>${field.label}</label>
+      <div class="radio-group">
+        ${FEEDBACK_RATING_OPTIONS.map(opt => `<label><input type="radio" name="fb_${field.key}" value="${opt}"> ${opt}</label>`).join('')}
+      </div>
+    </div>`;
+}
+
+// フィードバックフォームの評価項目（6項目）を一度だけ生成します
+function buildFeedbackForm_(){
+  const wrap = document.getElementById('feedbackRatingFields');
+  if(wrap) wrap.innerHTML = FEEDBACK_RATING_FIELDS.map(ratingRadioHTML_).join('');
+}
+
+// スピーカーローテーションの履歴から「対象（週・プレゼンター）」の候補一覧を作る
+// （メインプレゼン1・2のどちらも対象。新しい週が上に来るよう並び替え）
+function feedbackTargetOptions_(){
+  const list = [];
+  const seen = {};
+  speakerRotation.forEach(r => {
+    [r.presenter1, r.presenter2].forEach(name => {
+      if(!name) return;
+      const key = r.week + '||' + name;
+      if(seen[key]) return;
+      seen[key] = true;
+      list.push({ key: key, week: r.week, name: name });
+    });
+  });
+  list.sort((a, b) => {
+    const da = parseYmd_(a.week), db = parseYmd_(b.week);
+    if(da && db) return db.getTime() - da.getTime();
+    return 0;
+  });
+  return list;
+}
+
+function renderFeedbackTargetSelect_(selectedKey){
+  const sel = document.getElementById('fbTarget');
+  if(!sel) return;
+  const current = selectedKey !== undefined ? selectedKey : sel.value;
+  const options = feedbackTargetOptions_();
+  sel.innerHTML = `<option value="">選択してください</option>` +
+    options.map(o => `<option value="${attrSafe_(o.key)}">${o.week}　${o.name}</option>`).join('');
+  if(current) sel.value = current;
+}
+
+function renderFeedbackRespondentSelect_(){
+  const sel = document.getElementById('fbRespondent');
+  if(!sel) return;
+  const current = sel.value;
+  const options = members.slice().sort((a, b) => (a.kana || a.name).localeCompare(b.kana || b.name, 'ja'))
+    .map(m => `<option value="${attrSafe_(m.name)}">${m.name}</option>`).join('');
+  sel.innerHTML = `<option value="">選択してください</option>` + options;
+  if(current) sel.value = current;
+}
+
+function renderFeedbackFilterSelect_(){
+  const sel = document.getElementById('fbFilter');
+  if(!sel) return;
+  const current = sel.value;
+  const options = feedbackTargetOptions_();
+  sel.innerHTML = `<option value="">すべての対象</option>` +
+    options.map(o => `<option value="${attrSafe_(o.key)}">${o.week}　${o.name}</option>`).join('');
+  if(current) sel.value = current;
+}
+
+function feedbackRatingTagsHTML_(f){
+  return FEEDBACK_RATING_FIELDS.map(field => {
+    const v = f[field.key];
+    return v ? `<span class="tag status-neutral" style="margin:2px 4px 2px 0; display:inline-block;">${field.label}：${v}</span>` : '';
+  }).join('');
+}
+
+function feedbackResultCardHTML_(f){
+  return `
+    <div class="card" style="padding:14px 16px; margin-bottom:10px;">
+      <div style="font-weight:700; font-size:13.5px;">${f.presenter}様　<span style="color:var(--ink-muted); font-weight:400;">（${f.week}）</span></div>
+      <div style="font-size:12px; color:var(--ink-muted); margin:2px 0 8px;">回答者：${f.respondent}${f.timestamp ? '　／　' + f.timestamp : ''}</div>
+      <div style="margin-bottom:6px;">${feedbackRatingTagsHTML_(f)}</div>
+      ${f.impression ? `<div style="font-size:12.5px; margin-top:6px;"><strong>印象に残ったこと：</strong>${f.impression}</div>` : ''}
+      ${f.advice ? `<div style="font-size:12.5px; margin-top:4px;"><strong>改善アドバイス：</strong>${f.advice}</div>` : ''}
+      ${f.future ? `<div style="font-size:12.5px; margin-top:4px;"><strong>今後の紹介・ビジネス展開：</strong>${f.future}</div>` : ''}
+    </div>`;
+}
+
+function renderFeedbackResults_(){
+  const list = document.getElementById('feedbackResultsList');
+  if(!list) return;
+  const filterSel = document.getElementById('fbFilter');
+  const filterKey = filterSel ? filterSel.value : '';
+  let rows = presenterFeedback.slice();
+  if(filterKey){
+    rows = rows.filter(f => (f.week + '||' + f.presenter) === filterKey);
+  }
+  rows.sort((a, b) => {
+    const da = parseYmd_(a.week), db = parseYmd_(b.week);
+    if(da && db && da.getTime() !== db.getTime()) return db.getTime() - da.getTime();
+    return 0;
+  });
+  list.innerHTML = rows.length ? rows.map(feedbackResultCardHTML_).join('') : `<div class="note">まだフィードバックはありません。</div>`;
+}
+
+function renderFeedback(){
+  renderFeedbackTargetSelect_();
+  renderFeedbackRespondentSelect_();
+  renderFeedbackFilterSelect_();
+  renderFeedbackResults_();
+}
+
+// ホームのプレゼン行から、対象をセットした状態でこの画面に遷移します
+function goToFeedback_(week, name){
+  showView('feedback');
+  renderFeedbackTargetSelect_(week + '||' + name);
+}
+
+function submitPresenterFeedback(event){
+  event.preventDefault();
+  const targetKey = document.getElementById('fbTarget').value;
+  const respondent = document.getElementById('fbRespondent').value;
+  if(!targetKey){ toast('対象（週・プレゼンター）を選択してください'); return false; }
+  if(!respondent){ toast('お名前を選択してください'); return false; }
+  const sepIdx = targetKey.indexOf('||');
+  const week = targetKey.slice(0, sepIdx);
+  const presenter = targetKey.slice(sepIdx + 2);
+
+  const fields = { week: week, presenter: presenter, respondent: respondent };
+  FEEDBACK_RATING_FIELDS.forEach(field => {
+    const checked = document.querySelector(`input[name="fb_${field.key}"]:checked`);
+    fields[field.key] = checked ? checked.value : '';
+  });
+  fields.impression = document.getElementById('fbImpression').value.trim();
+  fields.advice     = document.getElementById('fbAdvice').value.trim();
+  fields.future     = document.getElementById('fbFuture').value.trim();
+
+  const btn = event.target.querySelector('button[type="submit"]');
+  if(btn){ btn.disabled = true; btn.textContent = '送信中…'; }
+
+  fetch(MEMBER_API_URL, {
+    method: 'POST',
+    mode: 'no-cors', // GAS側のCORS制約を避けるため。応答内容は読み取れませんが送信自体は行われます。
+    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+    body: JSON.stringify(Object.assign({ action: 'presenterFeedback' }, fields)),
+  }).then(() => {
+    const timestamp = new Date().toLocaleString('ja-JP', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' });
+    const existing = presenterFeedback.find(f => f.week === week && f.presenter === presenter && f.respondent === respondent);
+    if(existing){ Object.assign(existing, fields, { timestamp: timestamp }); }
+    else{ presenterFeedback.push(Object.assign({}, fields, { timestamp: timestamp })); }
+    renderFeedbackFilterSelect_();
+    renderFeedbackResults_();
+    updateNavCounts();
+    event.target.reset();
+    toast('フィードバックを送信しました');
+    if(btn){ btn.disabled = false; btn.textContent = 'フィードバックを送信'; }
+  }).catch(() => {
+    toast('送信に失敗しました。通信環境をご確認のうえ、もう一度お試しください。');
+    if(btn){ btn.disabled = false; btn.textContent = 'フィードバックを送信'; }
   });
 
   return false;
@@ -2215,6 +2454,22 @@ function applyMembersFromAPI(payload){
     podcastUrl: ed.podcastUrl || '',
   })) : [];
 
+  presenterFeedback = Array.isArray(payload.feedback) ? payload.feedback.map(f => ({
+    week: f.week || '',
+    presenter: f.presenter || '',
+    respondent: f.respondent || '',
+    tone: f.tone || '',
+    prep: f.prep || '',
+    referral: f.referral || '',
+    slides: f.slides || '',
+    overall: f.overall || '',
+    passion: f.passion || '',
+    impression: f.impression || '',
+    advice: f.advice || '',
+    future: f.future || '',
+    timestamp: f.timestamp || '',
+  })) : [];
+
   updateLastUpdatedFoot(payload.updatedAt);
   renderAll();
   setDataSourceBadge('live');
@@ -2304,6 +2559,7 @@ function renderAll(){
   renderTopMeta();
   renderHome();
   renderRotation();
+  renderFeedback();
   renderEducation();
   renderDocs();
   renderSchedule();
@@ -2315,10 +2571,12 @@ function renderAll(){
 }
 
 buildNav();
+buildFeedbackForm_();
 renderAll();
 showView('home');
 loadMembersFromAPI();
 document.getElementById('visitorRegisterForm').onsubmit = submitVisitorRegister;
+document.getElementById('feedbackForm').onsubmit = submitPresenterFeedback;
 </script>
 </body>
 </html>
