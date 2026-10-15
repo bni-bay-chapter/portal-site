@@ -17,7 +17,7 @@
   比べて、違っていた場合だけ静かに1回だけ読み込み直します（URLは変えません。LINEや
   Messenger等で共有した際に、リンクが長くなったり、表示が崩れたりしないようにするためです）。
 -->
-<script>window.__BNI_BUILD_ID__ = '2026-10-11-01';</script>
+<script>window.__BNI_BUILD_ID__ = '2026-10-15-01';</script>
 <script>
 (function(){
   try{
@@ -593,7 +593,7 @@
                   <textarea id="fbImpression" rows="2"></textarea>
                 </div>
                 <div class="field full">
-                  <label for="fbAdvice">改善アドバイス</label>
+                  <label for="fbAdvice">もっとより良くなるためのアドバイス</label>
                   <textarea id="fbAdvice" rows="2"></textarea>
                 </div>
                 <div class="field full">
@@ -606,9 +606,10 @@
           </div>
           <div class="card" style="padding:20px;">
             <div class="section-title" style="font-size:14px;">みんなのフィードバック</div>
+            <div class="section-sub" id="feedbackResultsNote"></div>
             <div class="toolbar" style="margin-bottom:10px;">
               <select id="fbFilter" onchange="renderFeedbackResults_()">
-                <option value="">すべての対象</option>
+                <option value="">すべての対象（最新5件）</option>
               </select>
             </div>
             <div id="feedbackResultsList"></div>
@@ -1734,7 +1735,7 @@ function renderFeedbackFilterSelect_(){
   if(!sel) return;
   const current = sel.value;
   const options = feedbackTargetOptions_();
-  sel.innerHTML = `<option value="">すべての対象</option>` +
+  sel.innerHTML = `<option value="">すべての対象（最新5件）</option>` +
     options.map(o => `<option value="${attrSafe_(o.key)}">${o.week}　${o.name}</option>`).join('');
   if(current) sel.value = current;
 }
@@ -1753,13 +1754,32 @@ function feedbackResultCardHTML_(f){
       <div style="font-size:12px; color:var(--ink-muted); margin:2px 0 8px;">回答者：${f.respondent}${f.timestamp ? '　／　' + f.timestamp : ''}</div>
       <div style="margin-bottom:6px;">${feedbackRatingTagsHTML_(f)}</div>
       ${f.impression ? `<div style="font-size:12.5px; margin-top:6px;"><strong>印象に残ったこと：</strong>${f.impression}</div>` : ''}
-      ${f.advice ? `<div style="font-size:12.5px; margin-top:4px;"><strong>改善アドバイス：</strong>${f.advice}</div>` : ''}
+      ${f.advice ? `<div style="font-size:12.5px; margin-top:4px;"><strong>もっとより良くなるためのアドバイス：</strong>${f.advice}</div>` : ''}
       ${f.future ? `<div style="font-size:12.5px; margin-top:4px;"><strong>今後の紹介・ビジネス展開：</strong>${f.future}</div>` : ''}
     </div>`;
 }
 
+const FEEDBACK_RESULT_LIMIT = 5; // 絞り込み無し（すべての対象）の時に表示する最新件数
+
+// タイムスタンプ文字列を日時として解釈します（「2026-10-08」「2026/10/08」
+// 「2026/10/08 14:26:54」など、表記ゆれがあっても出来るだけ解釈できるようにしています）
+function parseFeedbackTimestamp_(s){
+  if(!s) return null;
+  const norm = String(s).trim().replace(/\//g, '-');
+  const d = new Date(norm.includes(' ') ? norm.replace(' ', 'T') : norm + 'T00:00:00');
+  return isNaN(d) ? null : d;
+}
+// 並び替え用のキー（新しい順）。タイムスタンプが解釈できない場合は、対象週の日付で代用します
+function feedbackSortKey_(f){
+  const t = parseFeedbackTimestamp_(f.timestamp);
+  if(t) return t.getTime();
+  const w = parseYmd_(f.week);
+  return w ? w.getTime() : 0;
+}
+
 function renderFeedbackResults_(){
   const list = document.getElementById('feedbackResultsList');
+  const note = document.getElementById('feedbackResultsNote');
   if(!list) return;
   const filterSel = document.getElementById('fbFilter');
   const filterKey = filterSel ? filterSel.value : '';
@@ -1767,11 +1787,16 @@ function renderFeedbackResults_(){
   if(filterKey){
     rows = rows.filter(f => (f.week + '||' + f.presenter) === filterKey);
   }
-  rows.sort((a, b) => {
-    const da = parseYmd_(a.week), db = parseYmd_(b.week);
-    if(da && db && da.getTime() !== db.getTime()) return db.getTime() - da.getTime();
-    return 0;
-  });
+  rows.sort((a, b) => feedbackSortKey_(b) - feedbackSortKey_(a));
+
+  if(!filterKey){
+    // 絞り込みをしていない時は、最新5件だけを表示します（残りは対象を選んで確認できます）
+    rows = rows.slice(0, FEEDBACK_RESULT_LIMIT);
+    if(note) note.textContent = presenterFeedback.length ? `最新${FEEDBACK_RESULT_LIMIT}件を表示しています。対象を絞り込むと、その対象の回答をすべて確認できます。` : '';
+  } else {
+    if(note) note.textContent = rows.length ? `この対象の回答をすべて表示しています（${rows.length}件）。` : '';
+  }
+
   list.innerHTML = rows.length ? rows.map(feedbackResultCardHTML_).join('') : `<div class="note">まだフィードバックはありません。</div>`;
 }
 
